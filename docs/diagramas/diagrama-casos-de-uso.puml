@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ranksep 70
+skinparam nodesep 45
+skinparam dpi 140
+
+actor "Solicitante\n(Morador/Portaria)" as Solicitante
+actor "Triagem\n(Sindico/Administradora)" as Triagem
+actor "Executor\n(Zelador/Manutencao/Prestador)" as Executor
+
+rectangle "Sistema de Tickets para Condominios" {
+  package "Abertura e acompanhamento" {
+    usecase "Abrir ticket" as UC_Abrir
+    usecase "Anexar foto" as UC_AnexarFoto
+    usecase "Acompanhar andamento" as UC_Acompanhar
+    usecase "Comentar ticket" as UC_ComentarSol
+    usecase "Confirmar resolucao" as UC_Confirmar
+    usecase "Reabrir ticket" as UC_Reabrir
+  }
+
+  package "Triagem administrativa" {
+    usecase "Classificar ticket" as UC_Classificar
+    usecase "Atribuir responsavel" as UC_Atribuir
+    usecase "Definir prioridade" as UC_Prioridade
+    usecase "Encerrar ticket" as UC_Encerrar
+    usecase "Cancelar ticket" as UC_Cancelar
+  }
+
+  package "Execucao" {
+    usecase "Assumir ticket" as UC_Assumir
+    usecase "Atualizar status" as UC_Status
+    usecase "Comentar ticket" as UC_ComentarExec
+    usecase "Marcar como concluido" as UC_Concluir
+    usecase "Anexar evidencia" as UC_Evidencia
+  }
+}
+
+Solicitante --> UC_Abrir
+Solicitante --> UC_Acompanhar
+Solicitante --> UC_ComentarSol
+Solicitante --> UC_Confirmar
+Solicitante --> UC_Reabrir
+
+Triagem --> UC_Classificar
+Triagem --> UC_Atribuir
+Triagem --> UC_Encerrar
+Triagem --> UC_Cancelar
+
+Executor --> UC_Assumir
+Executor --> UC_Status
+Executor --> UC_ComentarExec
+Executor --> UC_Concluir
+
+UC_Abrir .> UC_AnexarFoto : <<extend>>
+UC_Classificar .> UC_Prioridade : <<include>>
+UC_Concluir .> UC_Evidencia : <<include>>
+
+@enduml
