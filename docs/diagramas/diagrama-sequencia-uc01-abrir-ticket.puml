@@ -1,0 +1,37 @@
+@startuml
+skinparam shadowing false
+skinparam dpi 140
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+title UC-01 - Abrir ticket de zeladoria (MVP)
+
+actor Solicitante
+boundary Frontend
+control API
+database Banco
+collections Armazenamento
+
+Solicitante -> Frontend: abrir novo ticket
+Frontend --> Solicitante: exibir formulario
+
+Solicitante -> Frontend: enviar dados + foto opcional
+Frontend -> API: POST /tickets
+
+alt campos obrigatorios ausentes
+  API --> Frontend: 400 validacao
+  Frontend --> Solicitante: corrigir formulario
+else dados validos
+  opt foto enviada
+    API -> Armazenamento: salvar foto
+    Armazenamento --> API: url da foto
+  end
+  API -> Banco: inserir Ticket (Aberto)
+  API -> Banco: inserir AuditLog (criacao)
+  Banco --> API: ticketId
+  API --> Frontend: 201 ticket criado
+  Frontend --> Solicitante: mostrar protocolo(ticketId)
+end
+
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+skinparam shadowing false
+skinparam dpi 140
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+title UC-03 - Executar atendimento e concluir ticket (MVP)
+
+actor Executor
+boundary Frontend
+control API
+database Banco
+collections Armazenamento
+
+Executor -> Frontend: iniciar atendimento(ticketId)
+Frontend -> API: PATCH /tickets/{id}/iniciar
+API -> Banco: atualizar status para Em execucao
+API -> Banco: inserir AuditLog (inicio)
+API --> Frontend: inicio confirmado
+Frontend --> Executor: ticket em execucao
+
+Executor -> Frontend: concluir ticket com evidencia
+Frontend -> API: PATCH /tickets/{id}/concluir
+
+alt evidencia ausente
+  API --> Frontend: 400 evidencia obrigatoria
+  Frontend --> Executor: solicitar evidencia
+else evidencia enviada
+  API -> Armazenamento: salvar evidencia
+  Armazenamento --> API: url da evidencia
+  API -> Banco: inserir Attachment
+  API -> Banco: inserir Comment final
+  API -> Banco: atualizar status para Concluido
+  API -> Banco: inserir AuditLog (conclusao)
+  API --> Frontend: conclusao registrada
+  Frontend --> Executor: confirmar conclusao
+end
+
+@enduml
