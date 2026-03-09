@@ -1,0 +1,27 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ranksep 120
+skinparam nodesep 90
+skinparam dpi 140
+
+title UC-01 - Abrir ticket de zeladoria
+
+class Usuario
+class Solicitante
+class Ticket
+class Categoria
+class Localizacao
+class Anexo
+class AuditLog
+
+Usuario <|-- Solicitante
+Solicitante "1" -- "0..*" Ticket : abre >
+Ticket "1" -- "1" Categoria : classifica em >
+Ticket "1" -- "1" Localizacao : ocorre em >
+Ticket "1" *-- "0..*" Anexo : possui >
+Ticket "1" -- "0..*" AuditLog : registra >
+
+@enduml
