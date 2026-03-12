@@ -88,6 +88,10 @@ db_data/
 *.out
 *.toc
 
+# ---------- Diagramas gerados ----------
+docs/diagramas/*.png
+docs/diagramas/.$*.drawio.bkp
+
 *.dump
 *.backup
 *.bak

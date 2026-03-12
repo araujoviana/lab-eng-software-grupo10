@@ -14,7 +14,7 @@
 \geometry{margin=2.5cm}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.6em}
-\graphicspath{{diagramas/}}
+\graphicspath{{diagramas/}{wireframe/}}
 
 \newcommand{\diagramafull}[2]{%
 \begin{figure}[p]
@@ -189,7 +189,41 @@ UC-03 -- Executar atendimento e concluir ticket & RF13, RF14, RF15, RF16, RF21 \
 
 \section{Wireframes (Protótipos de Baixa Fidelidade)}
 
-% Seção propositalmente deixada sem conteúdo nesta entrega parcial.
+Este capítulo apresenta os wireframes construídos para validar navegação, distribuição
+de informações e fluxo operacional do MVP antes da implementação final da interface.
+Os protótipos estão organizados de acordo com as principais telas do sistema.
+
+\subsection{Dashboard e menu principal}
+
+Tela inicial com visão geral do sistema e acesso rápido aos módulos principais.
+
+\diagramafull{dashboard.png}{Wireframe -- Dashboard do sistema}
+
+\subsection{Lista de tickets}
+
+Tela para consulta dos chamados registrados, com foco em acompanhamento e priorização.
+
+\diagramafull{listat.png}{Wireframe -- Lista de tickets}
+
+\subsection{Formulário de criação de ticket}
+
+Tela de abertura de ticket, alinhada ao UC-01 (campos de categoria, localização,
+descrição e envio da solicitação).
+
+\diagramafull{novot.png}{Wireframe -- Formulário de criação de ticket}
+
+\subsection{Relatórios e métricas}
+
+Tela de monitoramento com indicadores para apoiar gestão operacional do condomínio.
+
+\diagramafull{relatorios.png}{Wireframe -- Relatórios (monitoramento e métricas)}
+
+\subsection{Lista de triagens}
+
+Tela de fila de triagem para classificação, priorização e encaminhamento de tickets,
+alinhada ao UC-02.
+
+\diagramafull{triagem.png}{Wireframe -- Lista de triagens de ticket}
 
 \section{Modelagem Leve do Sistema}
 

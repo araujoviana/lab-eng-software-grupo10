@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeloDesk - Gestão de Manutenção</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface2: #1e2230;
+    --surface3: #252a3a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f2f8;
+    --text2: #8b93b0;
+    --text3: #545d80;
+    --accent: #4f7cff;
+    --accent2: #7c9fff;
+    --green: #22c58b;
+    --green2: #1a9e6f;
+    --amber: #f0a840;
+    --amber2: #c47f1a;
+    --red: #f05252;
+    --red2: #c02020;
+    --purple: #a855f7;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* Layout */
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 0;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #fff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    padding: 6px 10px; border-radius: 6px; letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .logo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .sidebar-nav { padding: 12px 12px; flex: 1; }
+  .nav-section { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 8px 8px 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 13.5px; color: var(--text2);
+    transition: all 0.15s; margin-bottom: 2px;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,124,255,0.12); color: var(--accent2); border-color: rgba(79,124,255,0.2); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.8; }
+  .nav-badge {
+    margin-left: auto; background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 20px;
+    font-family: var(--mono);
+  }
+  .sidebar-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-row { display: flex; align-items: center; gap: 10px; }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .user-role { font-size: 11px; color: var(--text3); }
+
+  /* Main */
+  .main { padding: 28px 32px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 16px; }
+  .page-title { font-size: 22px; font-weight: 600; color: var(--text); }
+  .page-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: var(--radius-sm);
+    font-family: var(--font); font-size: 13.5px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3d6be0; }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--surface3); color: var(--text); }
+  .btn-success { background: var(--green2); color: #fff; }
+  .btn-success:hover { background: #158058; }
+  .btn-danger { background: rgba(240,82,82,0.12); color: var(--red); border: 1px solid rgba(240,82,82,0.2); }
+  .btn-danger:hover { background: rgba(240,82,82,0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+  .btn-icon { padding: 8px; border-radius: var(--radius-sm); background: var(--surface2); border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; }
+  .btn-icon:hover { background: var(--surface3); color: var(--text); }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .stat-label { font-size: 11.5px; color: var(--text3); font-weight: 500; letter-spacing: 0.3px; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 600; color: var(--text); font-family: var(--mono); line-height: 1; }
+  .stat-delta { font-size: 11.5px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.down { color: var(--red); }
+  .stat-delta.neutral { color: var(--text3); }
+  .stat-accent { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 2px; }
+  .stat-accent.blue { background: var(--accent); }
+  .stat-accent.green { background: var(--green); }
+  .stat-accent.amber { background: var(--amber); }
+  .stat-accent.red { background: var(--red); }
+
+  /* Table */
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .table-toolbar { padding: 14px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .table-toolbar-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .search-input {
+    background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 7px 12px; width: 200px; outline: none;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+  .filter-select {
+    background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    color: var(--text2); font-family: var(--font); font-size: 13px;
+    padding: 7px 10px; outline: none; cursor: pointer;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: 11.5px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 18px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 18px; font-size: 13.5px; color: var(--text2); }
+  tbody td:first-child { color: var(--text); font-weight: 500; }
+
+  /* Badges / Status */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+  }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .badge-aberto { background: rgba(79,124,255,0.12); color: var(--accent2); }
+  .badge-aberto::before { background: var(--accent); }
+  .badge-triagem { background: rgba(168,85,247,0.12); color: #c084fc; }
+  .badge-triagem::before { background: var(--purple); }
+  .badge-andamento { background: rgba(240,168,64,0.12); color: var(--amber); }
+  .badge-andamento::before { background: var(--amber); }
+  .badge-concluido { background: rgba(34,197,139,0.12); color: var(--green); }
+  .badge-concluido::before { background: var(--green); }
+  .badge-cancelado { background: rgba(240,82,82,0.12); color: var(--red); }
+  .badge-cancelado::before { background: var(--red); }
+
+  .priority-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+    font-family: var(--mono);
+  }
+  .priority-alta { background: rgba(240,82,82,0.15); color: var(--red); }
+  .priority-media { background: rgba(240,168,64,0.15); color: var(--amber); }
+  .priority-baixa { background: rgba(34,197,139,0.15); color: var(--green); }
+
+  /* Modal / Forms */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; width: 100%; max-width: 560px;
+    max-height: 90vh; overflow-y: auto;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { padding: 22px 24px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-body { padding: 22px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12.5px; font-weight: 500; color: var(--text2); margin-bottom: 7px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: var(--font); font-size: 13.5px; padding: 9px 13px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
+  .form-select option { background: var(--surface); }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Ticket detail panel */
+  .detail-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+  }
+  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .detail-id { font-family: var(--mono); font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+  .detail-title { font-size: 18px; font-weight: 600; }
+  .detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .detail-field { }
+  .detail-field-label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .detail-field-value { font-size: 13.5px; color: var(--text2); }
+  .detail-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* Timeline / Activity */
+  .timeline { }
+  .timeline-item { display: flex; gap: 12px; margin-bottom: 16px; }
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; position: relative; }
+  .timeline-dot::after { content: ''; position: absolute; left: 3px; top: 12px; width: 2px; height: calc(100% + 8px); background: var(--border); }
+  .timeline-item:last-child .timeline-dot::after { display: none; }
+  .timeline-content { flex: 1; }
+  .timeline-event { font-size: 13px; color: var(--text2); }
+  .timeline-event strong { color: var(--text); font-weight: 500; }
+  .timeline-time { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+
+  /* Toast */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    font-size: 13px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+    animation: toastIn 0.2s ease; min-width: 240px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  @keyframes toastIn { from { transform: translateX(12px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .toast-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .toast-success { border-left: 3px solid var(--green); }
+  .toast-info { border-left: 3px solid var(--accent); }
+  .toast-warning { border-left: 3px solid var(--amber); }
+
+  /* Progress */
+  .progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .progress-fill.blue { background: var(--accent); }
+  .progress-fill.green { background: var(--green); }
+  .progress-fill.amber { background: var(--amber); }
+
+  /* Kanban */
+  .kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; min-height: 60vh; }
+  .kanban-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .kanban-col-header { padding: 13px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .kanban-col-title { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+  .kanban-count { font-family: var(--mono); font-size: 11px; color: var(--text3); background: var(--surface2); padding: 2px 7px; border-radius: 20px; }
+  .kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
+  .kanban-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .kanban-card:hover { border-color: var(--border2); background: var(--surface3); }
+  .kanban-card-id { font-family: var(--mono); font-size: 10.5px; color: var(--text3); margin-bottom: 4px; }
+  .kanban-card-title { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+  .kanban-card-meta { display: flex; align-items: center; justify-content: space-between; }
+  .assignee-chip {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text3);
+  }
+  .assignee-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+
+  /* Empty state */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text3); text-align: center; }
+  .empty-state svg { width: 40px; height: 40px; opacity: 0.3; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">
+        <svg viewBox="0 0 16 16" width="12" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 8 3zm-.5 2v4l3 1.5.5-.87-2.5-1.25V5z"/></svg>
+        ZPro
+      </div>
+      <div class="logo-name">ZeloDesk</div>
+      <div class="logo-sub">Edifício Central Business</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Painel</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-section">Tickets</div>
+      <div class="nav-item" onclick="showPage('tickets')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v10H2z"/><path d="M5 6h6M5 9h4"/></svg>
+        Todos os Tickets
+        <span class="nav-badge" id="badge-tickets">8</span>
+      </div>
+      <div class="nav-item" onclick="showPage('triagem')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l6 4 6-4M2 4v8h12V4"/></svg>
+        Triagem
+        <span class="nav-badge" id="badge-triagem" style="background: var(--purple);">3</span>
+      </div>
+      <div class="nav-item" onclick="showPage('kanban')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="4" height="10" rx="1"/><rect x="6" y="3" width="4" height="7" rx="1"/><rect x="11" y="3" width="4" height="8" rx="1"/></svg>
+        Quadro Kanban
+      </div>
+      <div class="nav-section">Relatórios</div>
+      <div class="nav-item" onclick="showPage('relatorios')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14V6l4-4h8v12z"/><path d="M6 2v4H2M5 9h6M5 11h4"/></svg>
+        Relatórios
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">JM</div>
+        <div>
+          <div class="user-name">João Martins</div>
+          <div class="user-role">Síndico · Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Visão geral da zeladoria · Março 2025</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-novo-ticket')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+          Novo Ticket
+        </button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label"><span class="stat-accent blue"></span> Tickets Abertos</div>
+          <div class="stat-value">8</div>
+          <div class="stat-delta up">↑ 2 esta semana</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><span class="stat-accent" style="background: var(--purple);"></span> Em Triagem</div>
+          <div class="stat-value">3</div>
+          <div class="stat-delta neutral">Aguardando atribuição</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><span class="stat-accent amber"></span> Em Andamento</div>
+          <div class="stat-value">4</div>
+          <div class="stat-delta neutral">2 com prazo hoje</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><span class="stat-accent green"></span> Concluídos (mês)</div>
+          <div class="stat-value">21</div>
+          <div class="stat-delta up">↑ 15% vs mês anterior</div>
+        </div>
+      </div>
+
+      <!-- Recent tickets -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <span class="table-toolbar-title">Tickets Recentes</span>
+          <button class="btn btn-secondary btn-sm" onclick="showPage('tickets')">Ver todos</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Título</th><th>Local</th><th>Status</th><th>Prioridade</th><th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody id="dashboard-tickets-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TICKETS -->
+    <div id="page-tickets" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Todos os Tickets</div>
+          <div class="page-sub">Gestão completa de chamados de manutenção</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-novo-ticket')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+          Novo Ticket
+        </button>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Buscar tickets..." id="search-tickets" oninput="renderTickets()">
+          <select class="filter-select" id="filter-status" onchange="renderTickets()">
+            <option value="">Todos os status</option>
+            <option value="Aberto">Aberto</option>
+            <option value="Triagem">Triagem</option>
+            <option value="Em Andamento">Em Andamento</option>
+            <option value="Concluído">Concluído</option>
+          </select>
+          <select class="filter-select" id="filter-priority" onchange="renderTickets()">
+            <option value="">Toda prioridade</option>
+            <option value="Alta">Alta</option>
+            <option value="Média">Média</option>
+            <option value="Baixa">Baixa</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Título</th><th>Categoria</th><th>Local</th><th>Status</th><th>Prioridade</th><th>Responsável</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="tickets-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRIAGEM -->
+    <div id="page-triagem" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Triagem de Tickets</div>
+          <div class="page-sub">Analise e atribua responsáveis aos chamados abertos</div>
+        </div>
+      </div>
+      <div id="triagem-list"></div>
+    </div>
+
+    <!-- KANBAN -->
+    <div id="page-kanban" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Quadro Kanban</div>
+          <div class="page-sub">Acompanhe o andamento dos atendimentos</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-novo-ticket')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+          Novo Ticket
+        </button>
+      </div>
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+
+    <!-- RELATORIOS -->
+    <div id="page-relatorios" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Relatórios</div>
+          <div class="page-sub">Indicadores e estatísticas de manutenção</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="detail-panel">
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text2)">Por Categoria</div>
+          <div id="chart-categoria"></div>
+        </div>
+        <div class="detail-panel">
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text2)">Por Responsável</div>
+          <div id="chart-responsavel"></div>
+        </div>
+        <div class="detail-panel" style="grid-column: 1 / -1;">
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text2)">Histórico de Tickets (últimos 30 dias)</div>
+          <div id="chart-historico"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+
+<!-- Novo Ticket -->
+<div class="modal-overlay" id="modal-novo-ticket">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Abrir Novo Ticket</div>
+      <button class="btn-icon" onclick="closeModal('modal-novo-ticket')">
+        <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Título do chamado *</label>
+        <input class="form-input" id="nt-titulo" placeholder="Ex: Vazamento na caixa d'água..." type="text">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <select class="form-select" id="nt-categoria">
+            <option value="">Selecione...</option>
+            <option>Hidráulica</option>
+            <option>Elétrica</option>
+            <option>Estrutural</option>
+            <option>Elevador</option>
+            <option>Limpeza</option>
+            <option>Segurança</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridade</label>
+          <select class="form-select" id="nt-prioridade">
+            <option value="Média">Média</option>
+            <option value="Alta">Alta</option>
+            <option value="Baixa">Baixa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Local / Unidade *</label>
+          <input class="form-input" id="nt-local" placeholder="Ex: Área comum, Bloco A, Ap 203..." type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Solicitante</label>
+          <input class="form-input" id="nt-solicitante" placeholder="Nome do morador..." type="text">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição detalhada</label>
+        <textarea class="form-textarea" id="nt-descricao" placeholder="Descreva o problema com detalhes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-novo-ticket')">Cancelar</button>
+      <button class="btn btn-primary" onclick="criarTicket()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 3L6 10l-3-3"/></svg>
+        Abrir Ticket
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Triagem Modal -->
+<div class="modal-overlay" id="modal-triagem">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size: 11px; font-family: var(--mono); color: var(--text3);" id="triagem-id-label">#TKT-001</div>
+        <div class="modal-title" id="triagem-titulo-label">Título do Ticket</div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-triagem')">
+        <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: var(--text2); line-height: 1.6;" id="triagem-descricao-label"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Atribuir Responsável *</label>
+          <select class="form-select" id="triagem-responsavel">
+            <option value="">Selecione o zelador...</option>
+            <option>Carlos Pereira</option>
+            <option>Marcos Alves</option>
+            <option>Fernanda Lima</option>
+            <option>Roberto Santos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prazo de Resolução</label>
+          <input class="form-input" id="triagem-prazo" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ajustar Prioridade</label>
+        <select class="form-select" id="triagem-prioridade">
+          <option value="Alta">Alta — resolver hoje</option>
+          <option value="Média" selected>Média — em até 3 dias</option>
+          <option value="Baixa">Baixa — em até 7 dias</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações da triagem</label>
+        <textarea class="form-textarea" id="triagem-obs" placeholder="Notas para o responsável..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-triagem')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarTriagem()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 3L6 10l-3-3"/></svg>
+        Confirmar Triagem
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Executar / Finalizar Modal -->
+<div class="modal-overlay" id="modal-executar">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size: 11px; font-family: var(--mono); color: var(--text3);" id="exec-id-label">#TKT-001</div>
+        <div class="modal-title" id="exec-titulo-label">Título</div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-executar')">
+        <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+        <div id="exec-status-badge"></div>
+        <div id="exec-responsavel-chip" style="font-size: 13px; color: var(--text2);"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Relato do Atendimento</label>
+        <textarea class="form-textarea" id="exec-relato" placeholder="Descreva o que foi feito, materiais usados, observações..." style="min-height: 100px;"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Atualizar Status</label>
+          <select class="form-select" id="exec-status">
+            <option value="Em Andamento">Em Andamento</option>
+            <option value="Concluído">Concluído</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Custo estimado (R$)</label>
+          <input class="form-input" id="exec-custo" type="number" placeholder="0,00">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-executar')">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarExecucao()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 3L6 10l-3-3"/></svg>
+        Atualizar Ticket
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-detalhe">
+  <div class="modal" style="max-width: 640px;">
+    <div class="modal-header">
+      <div>
+        <div style="font-size: 11px; font-family: var(--mono); color: var(--text3);" id="det-id"></div>
+        <div class="modal-title" id="det-titulo"></div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-detalhe')">
+        <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="det-body"></div>
+    <div class="modal-footer" id="det-footer"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ===== DATA =====
+let ticketIdSeq = 9;
+let activeTriagemId = null;
+let activeExecId = null;
+
+const responsaveisColors = {
+  'Carlos Pereira': '#4f7cff',
+  'Marcos Alves': '#a855f7',
+  'Fernanda Lima': '#22c58b',
+  'Roberto Santos': '#f0a840',
+};
+
+const initials = name => name ? name.split(' ').map(w=>w[0]).slice(0,2).join('') : '?';
+
+let tickets = [
+  { id: 'TKT-001', titulo: 'Vazamento no teto do 3º andar', categoria: 'Hidráulica', local: 'Corredor 3° andar', status: 'Em Andamento', prioridade: 'Alta', responsavel: 'Carlos Pereira', solicitante: 'Maria Silva', descricao: 'Mancha de umidade no forro do corredor, próximo ao elevador. Piora quando chove.', criado: '12/03/2025', prazo: '2025-03-14', atividades: ['Ticket criado por Maria Silva', 'Triagem realizada — atribuído a Carlos Pereira', 'Carlos iniciou vistoria no local'] },
+  { id: 'TKT-002', titulo: 'Lâmpada queimada na garagem', categoria: 'Elétrica', local: 'Garagem B2', status: 'Aberto', prioridade: 'Baixa', responsavel: '', solicitante: 'José Fernandes', descricao: 'Lâmpada do setor B2 apagada há 3 dias. Área escura.', criado: '11/03/2025', prazo: '', atividades: ['Ticket criado por José Fernandes'] },
+  { id: 'TKT-003', titulo: 'Elevador 2 com barulho estranho', categoria: 'Elevador', local: 'Elevador 2 — Torre A', status: 'Triagem', prioridade: 'Alta', responsavel: '', solicitante: 'Ana Rodrigues', descricao: 'Ruído metálico ao chegar no 8° andar. Solicita vistoria urgente.', criado: '12/03/2025', prazo: '', atividades: ['Ticket criado por Ana Rodrigues'] },
+  { id: 'TKT-004', titulo: 'Portão da garagem travado', categoria: 'Segurança', local: 'Portão Garagem Principal', status: 'Concluído', prioridade: 'Alta', responsavel: 'Marcos Alves', solicitante: 'Pedro Costa', descricao: 'Portão não abre com controle remoto.', criado: '10/03/2025', prazo: '2025-03-11', atividades: ['Ticket criado por Pedro Costa', 'Triagem — atribuído a Marcos Alves', 'Marcos fez troca do receptor do portão', 'Ticket concluído — portão funcionando'] },
+  { id: 'TKT-005', titulo: 'Infiltração no apartamento 502', categoria: 'Hidráulica', local: 'Ap. 502 — Torre B', status: 'Triagem', prioridade: 'Média', responsavel: '', solicitante: 'Carla Mendes', descricao: 'Infiltração na parede do banheiro, provavelmente do ap. 602.', criado: '11/03/2025', prazo: '', atividades: ['Ticket criado por Carla Mendes'] },
+  { id: 'TKT-006', titulo: 'Manutenção da bomba d\'água', categoria: 'Hidráulica', local: 'Casa de Máquinas', status: 'Em Andamento', prioridade: 'Alta', responsavel: 'Fernanda Lima', solicitante: 'Síndico', descricao: 'Pressão baixa nos andares superiores. Bomba com desgaste.', criado: '09/03/2025', prazo: '2025-03-13', atividades: ['Ticket criado pelo síndico', 'Atribuído a Fernanda Lima', 'Fernanda verificou e acionou manutenção preventiva'] },
+  { id: 'TKT-007', titulo: 'Gramado seco no jardim', categoria: 'Limpeza', local: 'Jardim — Área Comum', status: 'Aberto', prioridade: 'Baixa', responsavel: '', solicitante: 'Beatriz Araújo', descricao: 'Gramado com manchas amarelas. Precisa de rega e adubação.', criado: '08/03/2025', prazo: '', atividades: ['Ticket criado por Beatriz Araújo'] },
+  { id: 'TKT-008', titulo: 'Interfone do portão sem áudio', categoria: 'Elétrica', local: 'Portaria Principal', status: 'Triagem', prioridade: 'Média', responsavel: '', solicitante: 'Fernando Gomes', descricao: 'Interfone do portão não transmite áudio desde ontem.', criado: '12/03/2025', prazo: '', atividades: ['Ticket criado por Fernando Gomes'] },
+];
+
+// ===== NAVIGATION =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(name)) n.classList.add('active');
+  });
+  if (name === 'tickets') renderTickets();
+  if (name === 'triagem') renderTriagem();
+  if (name === 'kanban') renderKanban();
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'relatorios') renderRelatorios();
+}
+
+// ===== RENDER DASHBOARD =====
+function renderDashboard() {
+  const tbody = document.getElementById('dashboard-tickets-body');
+  const recent = [...tickets].slice(-5).reverse();
+  tbody.innerHTML = recent.map(t => rowHtml(t)).join('');
+  updateBadges();
+}
+
+function updateBadges() {
+  const abertos = tickets.filter(t => t.status === 'Aberto' || t.status === 'Triagem' || t.status === 'Em Andamento').length;
+  const triagem = tickets.filter(t => t.status === 'Triagem').length;
+  document.getElementById('badge-tickets').textContent = abertos;
+  document.getElementById('badge-triagem').textContent = triagem;
+  // Update stats
+  const stats = document.querySelectorAll('.stat-value');
+  if (stats.length >= 4) {
+    stats[0].textContent = tickets.filter(t => t.status === 'Aberto').length;
+    stats[1].textContent = tickets.filter(t => t.status === 'Triagem').length;
+    stats[2].textContent = tickets.filter(t => t.status === 'Em Andamento').length;
+    stats[3].textContent = tickets.filter(t => t.status === 'Concluído').length;
+  }
+}
+
+function rowHtml(t) {
+  return `<tr onclick="openDetalhe('${t.id}')">
+    <td><span style="font-family: var(--mono); font-size: 12px; color: var(--text3);">#${t.id}</span></td>
+    <td style="max-width: 220px;">${t.titulo}</td>
+    <td style="color: var(--text3);">${t.local}</td>
+    <td>${statusBadge(t.status)}</td>
+    <td>${priorityBadge(t.prioridade)}</td>
+    <td style="font-family: var(--mono); font-size: 12px; color: var(--text3);">${t.criado}</td>
+  </tr>`;
+}
+
+function statusBadge(s) {
+  const map = { 'Aberto': 'aberto', 'Triagem': 'triagem', 'Em Andamento': 'andamento', 'Concluído': 'concluido', 'Cancelado': 'cancelado' };
+  return `<span class="badge badge-${map[s] || 'aberto'}">${s}</span>`;
+}
+function priorityBadge(p) {
+  const map = { 'Alta': 'alta', 'Média': 'media', 'Baixa': 'baixa' };
+  return `<span class="priority-badge priority-${map[p] || 'media'}">${p}</span>`;
+}
+
+// ===== RENDER TICKETS =====
+function renderTickets() {
+  const search = document.getElementById('search-tickets').value.toLowerCase();
+  const filterStatus = document.getElementById('filter-status').value;
+  const filterPriority = document.getElementById('filter-priority').value;
+  const filtered = tickets.filter(t => {
+    const matchSearch = !search || t.titulo.toLowerCase().includes(search) || t.id.toLowerCase().includes(search) || t.local.toLowerCase().includes(search);
+    const matchStatus = !filterStatus || t.status === filterStatus;
+    const matchPriority = !filterPriority || t.prioridade === filterPriority;
+    return matchSearch && matchStatus && matchPriority;
+  });
+  const tbody = document.getElementById('tickets-body');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text3);">Nenhum ticket encontrado</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(t => `
+    <tr onclick="openDetalhe('${t.id}')">
+      <td><span style="font-family: var(--mono); font-size: 12px; color: var(--text3);">#${t.id}</span></td>
+      <td style="max-width: 200px;">${t.titulo}</td>
+      <td style="color: var(--text3);">${t.categoria}</td>
+      <td style="color: var(--text3);">${t.local}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td>${priorityBadge(t.prioridade)}</td>
+      <td>${t.responsavel ? `<div style="display:flex;align-items:center;gap:6px"><div class="assignee-avatar" style="background: ${responsaveisColors[t.responsavel] || '#4f7cff'}22; color: ${responsaveisColors[t.responsavel] || '#4f7cff'}; font-size: 9px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">${initials(t.responsavel)}</div><span style="font-size: 12.5px; color: var(--text2);">${t.responsavel}</span></div>` : '<span style="color: var(--text3); font-size: 12px;">—</span>'}</td>
+      <td onclick="event.stopPropagation()">
+        <div style="display: flex; gap: 6px;">
+          ${t.status === 'Aberto' || t.status === 'Triagem' ? `<button class="btn btn-secondary btn-sm" onclick="openTriagem('${t.id}')">Triagem</button>` : ''}
+          ${t.status === 'Em Andamento' ? `<button class="btn btn-success btn-sm" onclick="openExecutar('${t.id}')">Executar</button>` : ''}
+          ${t.status === 'Triagem' ? `<button class="btn btn-success btn-sm" onclick="openExecutar('${t.id}')">Atender</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ===== RENDER TRIAGEM =====
+function renderTriagem() {
+  const pendentes = tickets.filter(t => t.status === 'Aberto' || t.status === 'Triagem');
+  const container = document.getElementById('triagem-list');
+  if (pendentes.length === 0) {
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p>Nenhum ticket aguardando triagem</p></div>`;
+    return;
+  }
+  container.innerHTML = pendentes.map(t => `
+    <div class="detail-panel" style="margin-bottom: 14px;">
+      <div class="detail-header">
+        <div>
+          <div class="detail-id">#${t.id} · ${t.categoria} · ${t.criado}</div>
+          <div class="detail-title">${t.titulo}</div>
+          <div style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
+            ${statusBadge(t.status)} ${priorityBadge(t.prioridade)}
+            <span style="font-size: 12px; color: var(--text3);">${t.local}</span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openDetalhe('${t.id}')">Detalhe</button>
+          <button class="btn btn-primary btn-sm" onclick="openTriagem('${t.id}')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="M8 2v6l3 3M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0z"/></svg>
+            Fazer Triagem
+          </button>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: var(--text3); line-height: 1.6; background: var(--surface2); padding: 10px 12px; border-radius: 8px;">
+        ${t.descricao}
+      </div>
+      ${t.responsavel ? `<div style="margin-top: 10px; font-size: 12.5px; color: var(--text2); display: flex; align-items: center; gap: 6px;"><div class="assignee-avatar" style="background: ${responsaveisColors[t.responsavel]}22; color: ${responsaveisColors[t.responsavel]}; font-size: 9px; width: 22px; height: 22px; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-weight:700;">${initials(t.responsavel)}</div> Atribuído: <strong style="color: var(--text);">${t.responsavel}</strong></div>` : '<div style="margin-top: 10px; font-size: 12px; color: var(--text3);">Sem responsável atribuído</div>'}
+    </div>
+  `).join('');
+}
+
+// ===== RENDER KANBAN =====
+function renderKanban() {
+  const cols = [
+    { key: 'Aberto', label: 'Aberto', dot: 'var(--accent)' },
+    { key: 'Triagem', label: 'Triagem', dot: 'var(--purple)' },
+    { key: 'Em Andamento', label: 'Em Andamento', dot: 'var(--amber)' },
+    { key: 'Concluído', label: 'Concluído', dot: 'var(--green)' },
+  ];
+  document.getElementById('kanban-board').innerHTML = cols.map(col => {
+    const colTickets = tickets.filter(t => t.status === col.key);
+    return `
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: ${col.dot}; display: inline-block;"></span>
+            ${col.label}
+          </div>
+          <span class="kanban-count">${colTickets.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${colTickets.length === 0 ? '<div style="color: var(--text3); font-size: 12px; text-align: center; padding: 20px 0;">Sem tickets</div>' : ''}
+          ${colTickets.map(t => `
+            <div class="kanban-card" onclick="openDetalhe('${t.id}')">
+              <div class="kanban-card-id">#${t.id} · ${t.categoria}</div>
+              <div class="kanban-card-title">${t.titulo}</div>
+              <div style="margin-bottom: 8px;">${priorityBadge(t.prioridade)}</div>
+              <div class="kanban-card-meta">
+                <div class="assignee-chip">
+                  ${t.responsavel ? `
+                    <div class="assignee-avatar" style="background: ${responsaveisColors[t.responsavel] || '#4f7cff'}22; color: ${responsaveisColors[t.responsavel] || '#4f7cff'}; font-weight: 700;">${initials(t.responsavel)}</div>
+                    ${t.responsavel.split(' ')[0]}
+                  ` : '<span style="color: var(--text3);">Sem resp.</span>'}
+                </div>
+                <span style="font-size: 11px; color: var(--text3); font-family: var(--mono);">${t.criado}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== RENDER RELATORIOS =====
+function renderRelatorios() {
+  // Categoria
+  const cats = {};
+  tickets.forEach(t => { cats[t.categoria] = (cats[t.categoria] || 0) + 1; });
+  const maxCat = Math.max(...Object.values(cats));
+  document.getElementById('chart-categoria').innerHTML = Object.entries(cats).sort((a,b) => b[1]-a[1]).map(([k,v]) => `
+    <div style="margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text2); margin-bottom: 4px;">
+        <span>${k}</span><span style="font-family: var(--mono); color: var(--text);">${v}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill blue" style="width: ${(v/maxCat*100).toFixed(0)}%;"></div></div>
+    </div>
+  `).join('');
+
+  // Responsavel
+  const resps = {};
+  tickets.filter(t => t.responsavel).forEach(t => { resps[t.responsavel] = (resps[t.responsavel] || 0) + 1; });
+  const maxResp = Math.max(...(Object.values(resps).length ? Object.values(resps) : [1]));
+  document.getElementById('chart-responsavel').innerHTML = Object.entries(resps).sort((a,b) => b[1]-a[1]).map(([k,v]) => `
+    <div style="margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text2); margin-bottom: 4px;">
+        <span>${k}</span><span style="font-family: var(--mono); color: var(--text);">${v}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill green" style="width: ${(v/maxResp*100).toFixed(0)}%;"></div></div>
+    </div>
+  `).join('');
+
+  // Historico
+  const days = ['06/03', '07/03', '08/03', '09/03', '10/03', '11/03', '12/03'];
+  const vals = [2, 1, 3, 2, 4, 3, 5];
+  const maxH = Math.max(...vals);
+  document.getElementById('chart-historico').innerHTML = `
+    <div style="display: flex; align-items: flex-end; gap: 10px; height: 100px;">
+      ${days.map((d, i) => `
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-size: 11px; font-family: var(--mono); color: var(--text3);">${vals[i]}</span>
+          <div style="width: 100%; background: var(--accent); border-radius: 4px 4px 0 0; height: ${(vals[i]/maxH*80).toFixed(0)}px; opacity: 0.7; transition: opacity 0.15s;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.7"></div>
+          <span style="font-size: 10.5px; color: var(--text3); font-family: var(--mono);">${d}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ===== CRIAR TICKET =====
+function criarTicket() {
+  const titulo = document.getElementById('nt-titulo').value.trim();
+  const categoria = document.getElementById('nt-categoria').value;
+  const local = document.getElementById('nt-local').value.trim();
+  if (!titulo || !categoria || !local) { toast('Preencha os campos obrigatórios', 'warning'); return; }
+  const t = {
+    id: 'TKT-' + String(ticketIdSeq++).padStart(3, '0'),
+    titulo, categoria, local,
+    prioridade: document.getElementById('nt-prioridade').value,
+    status: 'Aberto',
+    responsavel: '',
+    solicitante: document.getElementById('nt-solicitante').value || 'Anônimo',
+    descricao: document.getElementById('nt-descricao').value,
+    criado: new Date().toLocaleDateString('pt-BR'),
+    prazo: '',
+    atividades: [`Ticket criado por ${document.getElementById('nt-solicitante').value || 'Anônimo'}`],
+  };
+  tickets.unshift(t);
+  closeModal('modal-novo-ticket');
+  ['nt-titulo','nt-local','nt-solicitante','nt-descricao'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nt-categoria').value = '';
+  toast(`Ticket #${t.id} aberto com sucesso`, 'success');
+  renderDashboard(); updateBadges();
+}
+
+// ===== TRIAGEM =====
+function openTriagem(id) {
+  const t = tickets.find(x => x.id === id);
+  if (!t) return;
+  activeTriagemId = id;
+  document.getElementById('triagem-id-label').textContent = '#' + t.id;
+  document.getElementById('triagem-titulo-label').textContent = t.titulo;
+  document.getElementById('triagem-descricao-label').textContent = t.descricao || 'Sem descrição.';
+  document.getElementById('triagem-responsavel').value = t.responsavel || '';
+  document.getElementById('triagem-prioridade').value = t.prioridade;
+  document.getElementById('triagem-obs').value = '';
+  const today = new Date(); today.setDate(today.getDate() + 3);
+  document.getElementById('triagem-prazo').value = today.toISOString().split('T')[0];
+  openModal('modal-triagem');
+}
+
+function confirmarTriagem() {
+  const resp = document.getElementById('triagem-responsavel').value;
+  if (!resp) { toast('Selecione um responsável', 'warning'); return; }
+  const t = tickets.find(x => x.id === activeTriagemId);
+  if (!t) return;
+  t.responsavel = resp;
+  t.prioridade = document.getElementById('triagem-prioridade').value;
+  t.prazo = document.getElementById('triagem-prazo').value;
+  t.status = 'Em Andamento';
+  const obs = document.getElementById('triagem-obs').value;
+  t.atividades.push(`Triagem realizada — atribuído a ${resp}`);
+  if (obs) t.atividades.push(`Obs: ${obs}`);
+  closeModal('modal-triagem');
+  toast(`Triagem concluída — atribuído a ${resp}`, 'success');
+  renderTriagem(); renderTickets(); renderDashboard(); renderKanban(); updateBadges();
+}
+
+// ===== EXECUTAR =====
+function openExecutar(id) {
+  const t = tickets.find(x => x.id === id);
+  if (!t) return;
+  activeExecId = id;
+  document.getElementById('exec-id-label').textContent = '#' + t.id;
+  document.getElementById('exec-titulo-label').textContent = t.titulo;
+  document.getElementById('exec-status-badge').innerHTML = statusBadge(t.status);
+  document.getElementById('exec-responsavel-chip').textContent = t.responsavel ? 'Responsável: ' + t.responsavel : '';
+  document.getElementById('exec-relato').value = '';
+  document.getElementById('exec-custo').value = '';
+  document.getElementById('exec-status').value = 'Em Andamento';
+  openModal('modal-executar');
+}
+
+function confirmarExecucao() {
+  const relato = document.getElementById('exec-relato').value.trim();
+  const novoStatus = document.getElementById('exec-status').value;
+  const custo = document.getElementById('exec-custo').value;
+  if (!relato) { toast('Informe o relato do atendimento', 'warning'); return; }
+  const t = tickets.find(x => x.id === activeExecId);
+  if (!t) return;
+  t.status = novoStatus;
+  t.atividades.push(`Atualização: ${relato}${custo ? ` (Custo: R$ ${custo})` : ''}`);
+  if (novoStatus === 'Concluído') t.atividades.push('Ticket finalizado e concluído');
+  closeModal('modal-executar');
+  toast(novoStatus === 'Concluído' ? `Ticket #${t.id} concluído!` : `Ticket #${t.id} atualizado`, 'success');
+  renderTickets(); renderDashboard(); renderKanban(); renderTriagem(); updateBadges();
+}
+
+// ===== DETALHE =====
+function openDetalhe(id) {
+  const t = tickets.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('det-id').textContent = '#' + t.id + ' · ' + t.categoria;
+  document.getElementById('det-titulo').textContent = t.titulo;
+  document.getElementById('det-body').innerHTML = `
+    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 18px; flex-wrap: wrap;">
+      ${statusBadge(t.status)} ${priorityBadge(t.prioridade)}
+      ${t.prazo ? `<span style="font-size: 12px; color: var(--text3); font-family: var(--mono);">Prazo: ${t.prazo}</span>` : ''}
+    </div>
+    <div class="detail-grid">
+      <div class="detail-field"><div class="detail-field-label">Local</div><div class="detail-field-value">${t.local}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Solicitante</div><div class="detail-field-value">${t.solicitante || '—'}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Responsável</div><div class="detail-field-value">${t.responsavel || '<span style="color: var(--text3)">Não atribuído</span>'}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Criado em</div><div class="detail-field-value" style="font-family: var(--mono); font-size: 12.5px;">${t.criado}</div></div>
+    </div>
+    <hr class="detail-divider">
+    <div style="font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Descrição</div>
+    <div style="font-size: 13.5px; color: var(--text2); line-height: 1.6; background: var(--surface2); padding: 12px 14px; border-radius: 8px; margin-bottom: 18px;">${t.descricao || 'Sem descrição'}</div>
+    <hr class="detail-divider">
+    <div style="font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Histórico de Atividades</div>
+    <div class="timeline">
+      ${(t.atividades || []).map((a, i) => `
+        <div class="timeline-item">
+          <div class="timeline-dot" style="${i === t.atividades.length - 1 ? 'background: var(--green)' : ''}"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">${a}</div>
+            <div class="timeline-time">${t.criado}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('det-footer').innerHTML = `
+    <button class="btn btn-secondary" onclick="closeModal('modal-detalhe')">Fechar</button>
+    ${(t.status === 'Aberto' || t.status === 'Triagem') ? `<button class="btn btn-primary" onclick="closeModal('modal-detalhe'); openTriagem('${t.id}')">Fazer Triagem</button>` : ''}
+    ${t.status === 'Em Andamento' ? `<button class="btn btn-success" onclick="closeModal('modal-detalhe'); openExecutar('${t.id}')">Registrar Atendimento</button>` : ''}
+    ${t.status === 'Triagem' && t.responsavel ? `<button class="btn btn-success" onclick="closeModal('modal-detalhe'); openExecutar('${t.id}')">Iniciar Atendimento</button>` : ''}
+  `;
+  openModal('modal-detalhe');
+}
+
+// ===== MODAL HELPERS =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ===== TOAST =====
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toasts');
+  const icons = {
+    success: '<svg class="toast-icon" viewBox="0 0 16 16" fill="none" stroke="var(--green)" stroke-width="2"><path d="M13 4L6 11l-3-3"/></svg>',
+    warning: '<svg class="toast-icon" viewBox="0 0 16 16" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M8 6v4M8 11.5v.5M3 14h10l-5-10z"/></svg>',
+    info: '<svg class="toast-icon" viewBox="0 0 16 16" fill="none" stroke="var(--accent2)" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5.5v.5"/></svg>',
+  };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = (icons[type] || icons.info) + msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ===== INIT =====
+renderDashboard();
+</script>
+</body>
+</html>
