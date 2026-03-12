@@ -6,5 +6,5 @@ Projeto de Laboratorio de Engenharia de Software - Grupo 10
 ### Stack (Até agora)
 
 1. Frontend -> Vue.js
-2. Backend -> FastAPI
+2. Backend -> Spring Boot
 3. PostgreSQL
