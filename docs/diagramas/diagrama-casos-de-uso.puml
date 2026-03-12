@@ -7,6 +7,9 @@ skinparam ranksep 70
 skinparam nodesep 45
 skinparam dpi 140
 
+' IMPORTANTE: este diagrama deve conter TODOS os casos de uso do sistema,
+' e nao apenas os casos de uso principais do MVP.
+
 actor "Solicitante\n(Morador/Portaria)" as Solicitante
 actor "Triagem\n(Sindico/Administradora)" as Triagem
 actor "Executor\n(Zelador/Manutencao/Prestador)" as Executor

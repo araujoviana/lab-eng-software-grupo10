@@ -9,7 +9,6 @@ skinparam dpi 140
 
 title UC-01 - Abrir ticket de zeladoria
 
-class Usuario
 class Solicitante
 class Ticket
 class Categoria
@@ -17,7 +16,6 @@ class Localizacao
 class Anexo
 class AuditLog
 
-Usuario <|-- Solicitante
 Solicitante "1" -- "0..*" Ticket : abre >
 Ticket "1" -- "1" Categoria : classifica em >
 Ticket "1" -- "1" Localizacao : ocorre em >

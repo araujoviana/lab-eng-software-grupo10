@@ -9,16 +9,15 @@ skinparam dpi 140
 
 title UC-02 - Realizar triagem e atribuir responsavel
 
-class Usuario
 class Triagem
 class Executor
 class Ticket
+class Prioridade
 class AuditLog
 
-Usuario <|-- Triagem
-Usuario <|-- Executor
 Triagem "1" -- "0..*" Ticket : classifica >
 Ticket "0..*" -- "0..1" Executor : atribuido para >
+Ticket "1" -- "1" Prioridade : possui >
 Ticket "1" -- "0..*" AuditLog : registra >
 
 @enduml

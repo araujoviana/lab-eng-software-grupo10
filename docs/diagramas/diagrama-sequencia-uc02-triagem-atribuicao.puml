@@ -7,31 +7,34 @@ skinparam BoxPadding 10
 
 title UC-02 - Realizar triagem e atribuir responsavel (MVP)
 
-actor Triagem
-boundary Frontend
-control API
-database Banco
+actor AtorTriagem as "Triagem"
+boundary "telaTriagem:TelaTriagem" as Tela
+entity "triagem:Triagem" as Triagem
+entity "ticket:Ticket" as Ticket
+entity "prioridade:Prioridade" as Prioridade
+entity "executor:Executor" as Executor
+entity "auditLog:AuditLog" as AuditLog
 
-Triagem -> Frontend: abrir fila de triagem
-Frontend -> API: GET /tickets?status=Aberto,Em triagem
-API -> Banco: consultar tickets pendentes
-Banco --> API: lista de tickets
-API --> Frontend: lista
-Frontend --> Triagem: exibir tickets
-
-Triagem -> Frontend: classificar e atribuir responsavel
-Frontend -> API: PATCH /tickets/{id}/triagem
+AtorTriagem -> Tela: selecionarTicketPendente(ticketId)
+Tela -> Triagem: iniciarTriagem(ticketId)
+Triagem -> Ticket: carregarDadosParaTriagem(ticketId)
+Ticket --> Triagem: dadosTicket
 
 alt informacao insuficiente
-  API -> Banco: atualizar status para Aguardando solicitante
-  API -> Banco: inserir AuditLog (solicitacao de complemento)
-  API --> Frontend: complemento solicitado
-  Frontend --> Triagem: confirmar solicitacao
+  Triagem -> Ticket: atualizarStatus(AguardandoSolicitante)
+  Triagem -> AuditLog: registrarSolicitacaoComplemento(ticket)
+  Triagem --> Tela: informarComplementoSolicitado()
 else triagem completa
-  API -> Banco: atualizar prioridade, responsavel e status Em execucao
-  API -> Banco: inserir AuditLog (atribuicao)
-  API --> Frontend: atribuicao concluida
-  Frontend --> Triagem: confirmar atribuicao
+  Triagem -> Prioridade: definirPrioridade(ticket, nivel)
+  Prioridade --> Triagem: prioridadeDefinida
+  Triagem -> Executor: selecionarResponsavel(ticket)
+  Executor --> Triagem: responsavelSelecionado
+  Triagem -> Ticket: atribuirResponsavel(executor)
+  Triagem -> Ticket: atualizarStatus(EmExecucao)
+  Triagem -> AuditLog: registrarAtribuicao(ticket, executor)
+  Triagem --> Tela: confirmarAtribuicao()
 end
+
+Tela --> AtorTriagem: exibirResultadoTriagem()
 
 @enduml
