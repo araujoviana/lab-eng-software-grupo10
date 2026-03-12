@@ -1,0 +1,329 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[provide=*]{babel}
+\babelprovide[import,main]{brazilian}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\graphicspath{{diagramas/}}
+
+\newcommand{\diagramafull}[2]{%
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{#1}
+    \caption{#2}
+\end{figure}
+\clearpage
+}
+
+\title{Laboratório de Engenharia de Software\\Projeto: Sistema de Tickets para Condomínios (Zelo Desk)}
+\author{Grupo 10\\Matheus Gabriel Viana Araujo\\Guilherme Araujo Castro\\Thiago Aredes\\Eduardo Takas}
+\date{Março de 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introdução}
+
+O projeto consiste em uma aplicação para gestão de tickets de zeladoria em condomínios.
+No sistema, moradores e portaria registram ocorrências de infraestrutura,
+e os responsáveis de triagem e execução acompanham o ciclo completo do atendimento.
+
+O objetivo é padronizar o fluxo de solicitações, reduzir ruído de comunicação,
+e garantir rastreabilidade desde a abertura até a conclusão do ticket.
+
+\section{O Projeto}
+
+\subsection{Problema ou oportunidade percebida}
+
+A comunicação de problemas de infraestrutura em condomínios costuma ser descentralizada
+(mensagens informais, planilhas e contatos pontuais),
+o que gera perda de informação, retrabalho e demora no atendimento.
+
+\subsection{Razão ou justificativa da demanda}
+
+Uma plataforma única para registro e acompanhamento de tickets melhora transparência,
+define responsabilidades e permite controle do processo de atendimento.
+Isso facilita a operação do condomínio e melhora a experiência dos moradores.
+
+\subsection{Descrição sucinta do produto de software}
+
+O Zelo Desk permite:
+\begin{itemize}
+    \item abertura de ticket com categoria, localização, descrição e anexo;
+    \item triagem com classificação, prioridade e atribuição de executor;
+    \item execução do atendimento com comentários, evidências e conclusão;
+    \item acompanhamento do andamento pelos envolvidos.
+\end{itemize}
+
+\subsection{Clientes, usuários e demais envolvidos}
+
+\begin{itemize}
+    \item Solicitante (morador/portaria);
+    \item Triagem (síndico/administradora);
+    \item Executor (zelador/manutenção/prestador);
+    \item Administração do condomínio;
+    \item Equipe técnica do projeto.
+\end{itemize}
+
+\subsection{Principais etapas para construir o produto}
+
+\begin{itemize}
+    \item levantamento e priorização de requisitos;
+    \item modelagem leve do sistema (Capítulo 5);
+    \item definição da arquitetura e stack (Capítulo 6);
+    \item implementação incremental com CI/CD;
+    \item testes e evolução do backlog.
+\end{itemize}
+
+\subsection{Principais critérios de qualidade}
+
+\begin{itemize}
+    \item usabilidade para abertura rápida de ticket;
+    \item segurança de acesso por perfil;
+    \item desempenho em operações comuns;
+    \item rastreabilidade por histórico e auditoria;
+    \item manutenibilidade por separação de camadas.
+\end{itemize}
+
+\section{Requisitos do Produto}
+
+\subsection{Requisitos Funcionais (RF)}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}p{9.8cm}|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RF01 & O sistema deve permitir autenticação de usuários com credenciais válidas (email e senha). & Alta \\ \hline
+RF02 & O sistema deve controlar acesso às funcionalidades por perfil (Solicitante, Triagem, Executor). & Alta \\ \hline
+RF03 & O sistema deve permitir abrir ticket de zeladoria. & Alta \\ \hline
+RF04 & O sistema deve permitir selecionar categoria do ticket. & Alta \\ \hline
+RF05 & O sistema deve permitir indicar localização do problema. & Alta \\ \hline
+RF06 & O sistema deve permitir anexar arquivos ao ticket. & Alta \\ \hline
+RF07 & O sistema deve permitir visualizar tickets cadastrados. & Alta \\ \hline
+RF08 & O sistema deve permitir visualizar detalhes do ticket. & Alta \\ \hline
+RF09 & O sistema deve registrar histórico/auditoria das alterações do ticket. & Alta \\ \hline
+RF10 & O sistema deve permitir classificar ticket na triagem. & Alta \\ \hline
+RF11 & O sistema deve permitir definir prioridade do ticket. & Alta \\ \hline
+RF12 & O sistema deve permitir atribuir responsável para execução. & Alta \\ \hline
+RF13 & O sistema deve permitir atualizar status do ticket. & Alta \\ \hline
+RF14 & O sistema deve permitir adicionar comentários de atendimento. & Alta \\ \hline
+RF15 & O sistema deve permitir registrar evidências do atendimento. & Alta \\ \hline
+RF16 & O sistema deve permitir concluir ticket. & Alta \\ \hline
+RF17 & O solicitante deve poder acompanhar andamento do ticket. & Média \\ \hline
+RF18 & O sistema deve permitir filtrar tickets por status, categoria, localização e período. & Média \\ \hline
+RF19 & O solicitante deve poder confirmar a resolução do ticket. & Média \\ \hline
+RF20 & O solicitante deve poder reabrir ticket concluído (janela válida). & Média \\ \hline
+RF21 & O executor deve poder assumir ticket atribuído. & Média \\ \hline
+RF22 & A triagem deve poder encerrar ticket quando aplicável. & Média \\ \hline
+RF23 & A triagem deve poder cancelar ticket com motivo registrado. & Média \\ \hline
+RF24 & O sistema deve notificar envolvidos em eventos relevantes. & Média \\ \hline
+\end{longtable}
+
+\subsection{Requisitos Não Funcionais (RNF)}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}p{9.8cm}|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RNF01 & O sistema deve garantir controle de acesso por perfil em todas as funcionalidades. & Alta \\ \hline
+RNF02 & O sistema deve armazenar credenciais de forma segura. & Alta \\ \hline
+RNF03 & O sistema deve manter trilha de auditoria das alterações. & Alta \\ \hline
+RNF04 & O sistema deve ter interface responsiva para desktop e mobile. & Alta \\ \hline
+RNF05 & O fluxo de abertura de ticket deve ser simples e direto. & Média \\ \hline
+RNF06 & O tempo de resposta de operações comuns deve ser de até 3 segundos em uso normal. & Alta \\ \hline
+RNF07 & O sistema deve garantir persistência e integridade dos dados. & Alta \\ \hline
+RNF08 & O histórico de alterações do ticket deve ser completo. & Alta \\ \hline
+RNF09 & O sistema deve expor API para integração entre frontend e backend. & Alta \\ \hline
+RNF10 & O sistema deve utilizar banco de dados PostgreSQL. & Alta \\ \hline
+\end{longtable}
+
+\subsection{Backlog inicial do MVP}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{9.4cm}|>{\raggedright\arraybackslash}p{3.0cm}|}
+\hline
+\textbf{Sprint} & \textbf{Itens principais} & \textbf{Objetivo} \\ \hline
+Sprint 1 & RF01 a RF08 & Fluxo de abertura e visualização \\ \hline
+Sprint 2 & RF09 a RF13 & Triagem e controle do processo \\ \hline
+Sprint 3 & RF14 a RF16, RF21 & Execução e conclusão \\ \hline
+Sprint 4 & RF17 a RF20, RF22 a RF24 & Andamento \\ \hline
+\end{tabular}
+\caption{Backlog funcional inicial}
+\end{table}
+
+\subsection{Rastreabilidade entre Casos de Uso e Requisitos}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|>{\raggedright\arraybackslash}p{5.0cm}|>{\raggedright\arraybackslash}p{8.8cm}|}
+\hline
+\textbf{Caso de Uso} & \textbf{Requisitos Relacionados} \\ \hline
+UC-01 -- Abrir ticket de zeladoria & RF03, RF04, RF05, RF06, RF09 \\ \hline
+UC-02 -- Realizar triagem e atribuir responsável & RF10, RF11, RF12, RF13, RF22, RF23 \\ \hline
+UC-03 -- Executar atendimento e concluir ticket & RF13, RF14, RF15, RF16, RF21 \\ \hline
+\end{tabular}
+\caption{Rastreabilidade dos casos de uso principais}
+\end{table}
+
+\section{Wireframes (Protótipos de Baixa Fidelidade)}
+
+% Seção propositalmente deixada sem conteúdo nesta entrega parcial.
+
+\section{Modelagem Leve do Sistema}
+
+\subsection{Diagrama de Casos de Uso (visão completa do sistema)}
+
+Conforme orientação da disciplina, o diagrama de casos de uso apresenta \textbf{todos os casos de uso do sistema},
+e não apenas os casos principais do MVP.
+
+\diagramafull{diagrama-casos-de-uso.png}{Diagrama de casos de uso do Sistema de Tickets para Condomínios}
+
+\subsection{Especificação dos casos de uso principais (MVP)}
+
+\subsubsection{UC-01 -- Abrir ticket de zeladoria}
+
+\textbf{Ator principal:} Solicitante (Morador/Portaria) \\
+\textbf{Objetivo:} registrar uma ocorrência para iniciar o atendimento. \\
+\textbf{Pré-condições:} usuário autenticado e com permissão de solicitante. \\
+\textbf{Pós-condições (sucesso):} ticket criado com status \texttt{Aberto}, dados salvos e histórico inicial registrado. \\
+\textbf{Pós-condições (falha):} ticket não é criado e o solicitante recebe mensagem de erro.
+
+\textbf{Cenário de sucesso principal}
+\begin{enumerate}
+    \item O solicitante seleciona a opção de abrir ticket.
+    \item O sistema apresenta formulário de abertura.
+    \item O solicitante informa título, descrição, categoria, localização e urgência.
+    \item O solicitante anexa foto, quando necessário.
+    \item O solicitante confirma o envio.
+    \item O sistema valida os campos obrigatórios.
+    \item O sistema cria o ticket com status \texttt{Aberto}.
+    \item O sistema registra histórico e exibe confirmação com identificador do ticket.
+\end{enumerate}
+
+\textbf{Cenários alternativos}
+\begin{itemize}
+    \item A1 -- Campos obrigatórios ausentes: o sistema informa os campos faltantes e retorna ao formulário.
+    \item A2 -- Anexo inválido: o sistema rejeita o arquivo e solicita novo envio.
+    \item A3 -- Falha de persistência: o sistema informa indisponibilidade temporária e não cria o ticket.
+\end{itemize}
+
+\textbf{Regras de negócio associadas}
+\begin{itemize}
+    \item RN-01: todo ticket deve ter categoria, localização e descrição mínima.
+    \item RN-02: anexo é opcional na abertura, mas recomendado para triagem mais rápida.
+\end{itemize}
+
+\subsubsection{UC-02 -- Realizar triagem e atribuir responsável}
+
+\textbf{Ator principal:} Triagem (Síndico/Administradora) \\
+\textbf{Objetivo:} classificar a demanda e encaminhar para execução. \\
+\textbf{Pré-condições:} ticket existente com status \texttt{Aberto} ou \texttt{Em triagem}. \\
+\textbf{Pós-condições (sucesso):} ticket classificado com prioridade e responsável definido. \\
+\textbf{Pós-condições (falha):} ticket permanece em fila de triagem, com justificativa registrada.
+
+\textbf{Cenário de sucesso principal}
+\begin{enumerate}
+    \item A triagem acessa a fila de tickets pendentes.
+    \item A triagem seleciona um ticket para análise.
+    \item O sistema exibe detalhes, histórico e anexos do ticket.
+    \item A triagem ajusta dados do ticket, se necessário.
+    \item A triagem define prioridade.
+    \item A triagem atribui um executor responsável.
+    \item A triagem confirma a operação.
+    \item O sistema salva as alterações, atualiza status para \texttt{Em execução} e registra auditoria.
+\end{enumerate}
+
+\textbf{Cenários alternativos}
+\begin{itemize}
+    \item B1 -- Informação insuficiente: triagem solicita complemento ao solicitante e marca como \texttt{Aguardando solicitante}.
+    \item B2 -- Sem executor disponível: ticket permanece em \texttt{Em triagem} até nova atribuição.
+    \item B3 -- Ticket improcedente/duplicado: triagem cancela ticket com motivo registrado.
+\end{itemize}
+
+\textbf{Regras de negócio associadas}
+\begin{itemize}
+    \item RN-03: apenas perfil de triagem pode definir prioridade e atribuir responsável.
+    \item RN-04: toda alteração de status e atribuição deve gerar registro de auditoria.
+\end{itemize}
+
+\subsubsection{UC-03 -- Executar atendimento e concluir ticket}
+
+\textbf{Ator principal:} Executor (Zelador/Manutenção/Prestador) \\
+\textbf{Objetivo:} executar o serviço e concluir o ticket com evidência. \\
+\textbf{Pré-condições:} ticket atribuído ao executor e apto para execução. \\
+\textbf{Pós-condições (sucesso):} ticket marcado como \texttt{Concluído}, com histórico e evidência final. \\
+\textbf{Pós-condições (falha):} ticket retorna para triagem ou permanece em execução com justificativa.
+
+\textbf{Cenário de sucesso principal}
+\begin{enumerate}
+    \item O executor acessa seus tickets atribuídos.
+    \item O executor assume o ticket.
+    \item O executor atualiza o status para \texttt{Em execução}.
+    \item O executor registra comentários de andamento.
+    \item O executor realiza o atendimento da demanda.
+    \item O executor anexa evidência final (ex.: foto do serviço realizado).
+    \item O executor marca o ticket como \texttt{Concluído}.
+    \item O sistema registra histórico, auditoria e notifica solicitante e triagem.
+\end{enumerate}
+
+\textbf{Cenários alternativos}
+\begin{itemize}
+    \item C1 -- Atendimento impossível no local: executor devolve para triagem com justificativa.
+    \item C2 -- Sem evidência final: sistema bloqueia conclusão até anexar evidência.
+    \item C3 -- Reabertura pelo solicitante (janela válida): ticket sai de \texttt{Concluído} e volta para triagem.
+\end{itemize}
+
+\textbf{Regras de negócio associadas}
+\begin{itemize}
+    \item RN-05: apenas executor atribuído pode concluir o ticket.
+    \item RN-06: conclusão exige registro mínimo de atendimento e evidência final.
+\end{itemize}
+
+\subsection{Diagramas de classes de domínio}
+
+\diagramafull{diagrama-classe-dominio-uc01-abrir-ticket.png}{Diagrama de classes de domínio -- UC-01}
+\diagramafull{diagrama-classe-dominio-uc02-triagem-atribuicao.png}{Diagrama de classes de domínio -- UC-02}
+\diagramafull{diagrama-classe-dominio-uc03-execucao-conclusao.png}{Diagrama de classes de domínio -- UC-03}
+
+\subsection{Diagramas de sequência}
+
+\diagramafull{diagrama-sequencia-uc01-abrir-ticket.png}{Diagrama de sequência -- UC-01}
+\diagramafull{diagrama-sequencia-uc02-triagem-atribuicao.png}{Diagrama de sequência -- UC-02}
+\diagramafull{diagrama-sequencia-uc03-execucao-conclusao.png}{Diagrama de sequência -- UC-03}
+
+\section{Descrição da Arquitetura do Sistema}
+
+Neste capítulo são apresentados os dois diagramas arquiteturais da entrega parcial:
+visão de componentes e visão de implantação.
+
+\subsection{Diagrama de componentes}
+
+\diagramafull{arquitetura-cap6-componentes.png}{Arquitetura inicial -- visão de componentes}
+
+\subsection{Diagrama de implantação}
+
+\diagramafull{arquitetura-cap6-deployment.png}{Arquitetura inicial -- visão de implantação}
+
+\end{document}

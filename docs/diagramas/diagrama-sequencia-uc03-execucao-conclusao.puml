@@ -7,34 +7,39 @@ skinparam BoxPadding 10
 
 title UC-03 - Executar atendimento e concluir ticket (MVP)
 
-actor Executor
-boundary Frontend
-control API
-database Banco
-collections Armazenamento
+actor AtorExecutor as "Executor"
+boundary "telaExecucao:TelaExecucaoTicket" as Tela
+entity "executor:Executor" as Executor
+entity "ticket:Ticket" as Ticket
+entity "comentario:Comentario" as Comentario
+entity "anexo:Anexo" as Anexo
+entity "auditLog:AuditLog" as AuditLog
 
-Executor -> Frontend: iniciar atendimento(ticketId)
-Frontend -> API: PATCH /tickets/{id}/iniciar
-API -> Banco: atualizar status para Em execucao
-API -> Banco: inserir AuditLog (inicio)
-API --> Frontend: inicio confirmado
-Frontend --> Executor: ticket em execucao
+AtorExecutor -> Tela: assumirTicket(ticketId)
+Tela -> Executor: iniciarAtendimento(ticketId)
+Executor -> Ticket: atualizarStatus(EmExecucao)
+Executor -> AuditLog: registrarInicio(ticket)
+Executor --> Tela: confirmarInicio()
+Tela --> AtorExecutor: exibirTicketEmExecucao()
 
-Executor -> Frontend: concluir ticket com evidencia
-Frontend -> API: PATCH /tickets/{id}/concluir
+AtorExecutor -> Tela: registrarAndamento(texto)
+Tela -> Executor: registrarComentario(ticket, texto)
+Executor -> Comentario: criarComentario(texto)
+Comentario --> Ticket: vincularComentario()
+
+AtorExecutor -> Tela: concluirTicket(evidencia)
+Tela -> Executor: concluirAtendimento(ticket, evidencia)
 
 alt evidencia ausente
-  API --> Frontend: 400 evidencia obrigatoria
-  Frontend --> Executor: solicitar evidencia
+  Executor --> Tela: bloquearConclusao(evidenciaObrigatoria)
+  Tela --> AtorExecutor: solicitarEvidencia()
 else evidencia enviada
-  API -> Armazenamento: salvar evidencia
-  Armazenamento --> API: url da evidencia
-  API -> Banco: inserir Attachment
-  API -> Banco: inserir Comment final
-  API -> Banco: atualizar status para Concluido
-  API -> Banco: inserir AuditLog (conclusao)
-  API --> Frontend: conclusao registrada
-  Frontend --> Executor: confirmar conclusao
+  Executor -> Anexo: anexarEvidencia(evidencia)
+  Anexo --> Ticket: vincularEvidencia()
+  Executor -> Ticket: atualizarStatus(Concluido)
+  Executor -> AuditLog: registrarConclusao(ticket)
+  Executor --> Tela: confirmarConclusao()
+  Tela --> AtorExecutor: exibirConclusaoRegistrada()
 end
 
 @enduml

@@ -7,31 +7,36 @@ skinparam BoxPadding 10
 
 title UC-01 - Abrir ticket de zeladoria (MVP)
 
-actor Solicitante
-boundary Frontend
-control API
-database Banco
-collections Armazenamento
+actor AtorSolicitante as "Solicitante"
+boundary "telaAbertura:TelaAberturaTicket" as Tela
+entity "solicitante:Solicitante" as Solicitante
+entity "ticket:Ticket" as Ticket
+entity "categoria:Categoria" as Categoria
+entity "localizacao:Localizacao" as Localizacao
+entity "anexo:Anexo" as Anexo
+entity "auditLog:AuditLog" as AuditLog
 
-Solicitante -> Frontend: abrir novo ticket
-Frontend --> Solicitante: exibir formulario
+AtorSolicitante -> Tela: iniciarAbertura()
+Tela -> Solicitante: informarDadosAbertura(titulo, descricao,\ncategoria, localizacao, urgencia, fotoOpcional)
 
-Solicitante -> Frontend: enviar dados + foto opcional
-Frontend -> API: POST /tickets
-
-alt campos obrigatorios ausentes
-  API --> Frontend: 400 validacao
-  Frontend --> Solicitante: corrigir formulario
+alt dados obrigatorios ausentes
+  Solicitante --> Tela: retornarErrosValidacao()
+  Tela --> AtorSolicitante: solicitarCorrecao()
 else dados validos
+  Solicitante -> Categoria: validarCategoria()
+  Categoria --> Solicitante: categoriaValida
+  Solicitante -> Localizacao: validarLocalizacao()
+  Localizacao --> Solicitante: localizacaoValida
+  Solicitante -> Ticket: criarTicket(Aberto)
+  Solicitante -> Ticket: definirCategoria(categoria)
+  Solicitante -> Ticket: definirLocalizacao(localizacao)
   opt foto enviada
-    API -> Armazenamento: salvar foto
-    Armazenamento --> API: url da foto
+    Solicitante -> Anexo: anexarFoto(foto)
+    Anexo --> Ticket: vincularAnexo()
   end
-  API -> Banco: inserir Ticket (Aberto)
-  API -> Banco: inserir AuditLog (criacao)
-  Banco --> API: ticketId
-  API --> Frontend: 201 ticket criado
-  Frontend --> Solicitante: mostrar protocolo(ticketId)
+  Solicitante -> AuditLog: registrarCriacao(ticket)
+  Solicitante --> Tela: exibirProtocolo(ticket)
+  Tela --> AtorSolicitante: confirmarAbertura()
 end
 
 @enduml

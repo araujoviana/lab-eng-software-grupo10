@@ -1,0 +1,39 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam dpi 140
+skinparam ranksep 110
+skinparam nodesep 85
+
+title Capitulo 6 - Visao de Componentes (Inicial)
+
+actor "Usuario\n(Solicitante / Triagem / Executor)" as Usuario
+
+package "Apresentacao" {
+  rectangle "Frontend\nVue.js" as Frontend
+}
+
+package "Aplicacao" {
+  rectangle "API\nSpring Boot" as API
+  rectangle "Camada de Dominio\nTickets, Triagem e Execucao" as Dominio
+}
+
+package "Infraestrutura" {
+  database "PostgreSQL" as DB
+  cloud "S3\nAnexos e Evidencias" as S3
+  rectangle "Servico de Notificacao\n(email/push)" as Notificacao
+  rectangle "Observabilidade\nCloudWatch Logs" as Logs
+}
+
+Usuario --> Frontend : HTTPS
+Frontend --> API : REST/JSON
+API --> Dominio : operacoes de negocio
+
+Dominio --> DB : persistencia
+Dominio --> S3 : anexos
+Dominio --> Notificacao : notificacoes
+API --> Logs : logs
+
+@enduml

@@ -9,14 +9,12 @@ skinparam dpi 140
 
 title UC-03 - Executar atendimento e concluir ticket
 
-class Usuario
 class Executor
 class Ticket
 class Comentario
 class Anexo
 class AuditLog
 
-Usuario <|-- Executor
 Executor "1" -- "0..*" Ticket : executa >
 Ticket "1" -- "0..*" Comentario : historico >
 Ticket "1" *-- "1..*" Anexo : evidencia >

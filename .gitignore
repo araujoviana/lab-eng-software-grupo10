@@ -9,6 +9,8 @@ desktop.ini
 *.swo
 *~
 
+labeng/
+
 # ---------- Logs ----------
 logs/
 *.log
@@ -40,7 +42,7 @@ coverage/
 .vite/
 *.tsbuildinfo
 
-# ---------- Python / FastAPI ----------
+# ---------- Backend artifacts (Java/Spring + Python legado) ----------
 __pycache__/
 *.py[cod]
 *.pyo
@@ -80,6 +82,11 @@ postgres_data/
 postgresql-data/
 db-data/
 db_data/
+
+# ---------- LaTeX ----------
+*.aux
+*.out
+*.toc
 
 *.dump
 *.backup
