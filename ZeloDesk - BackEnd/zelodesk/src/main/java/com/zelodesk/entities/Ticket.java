@@ -16,13 +16,14 @@ public class Ticket {
 
     private String titulo;
     private String descricao;
-    private String categoria;
+    private String categoria;  // Transformar em enum
     private String localPredio;
-    private String prioridade;
+    private String prioridade; // Transformar em enum
     private String status;
+    private String solicitador;
 
     @ManyToOne
-    private Usuario solicitante;
+    private Usuario solicitante; // Relação com o usuario que solicita em caso de 
 
     @ManyToOne
     private Usuario executor;
