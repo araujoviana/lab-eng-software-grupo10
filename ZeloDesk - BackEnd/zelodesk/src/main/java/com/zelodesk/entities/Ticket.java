@@ -17,7 +17,7 @@ public class Ticket {
     private String titulo;
     private String descricao;
     private String categoria;
-    private String localizacao;
+    private String localPredio;
     private String prioridade;
     private String status;
 
