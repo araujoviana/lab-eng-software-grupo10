@@ -1,10 +1,12 @@
 package com.zelodesk.dtos;
 
+import com.zelodesk.entities.Ticket;
 import com.zelodesk.enums.PrioridadeEnum;
 
 public class TicketDTO {
 
     private Long id;
+    private String ticketCode;
     private String titulo;
     private String descricao;
     private String categoria;  // Transformar em enum
@@ -15,8 +17,9 @@ public class TicketDTO {
 
     public TicketDTO(){}
 
-    public TicketDTO(Long id, String solicitador, String status, PrioridadeEnum prioridade, String localPredio, String categoria, String descricao, String titulo) {
+    public TicketDTO(Long id,String ticketCode, String solicitador, String status, PrioridadeEnum prioridade, String localPredio, String categoria, String descricao, String titulo) {
         this.id = id;
+        this.ticketCode = ticketCode;
         this.solicitador = solicitador;
         this.status = status;
         this.prioridade = prioridade;
@@ -26,12 +29,32 @@ public class TicketDTO {
         this.titulo = titulo;
     }
 
+    public TicketDTO(Ticket ticket){
+        id = ticket.getId();
+        ticketCode = String.format("TKT-%03d", ticket.getId());
+        titulo = ticket.getTitulo();
+        descricao = ticket.getDescricao();
+        categoria = ticket.getCategoria();
+        localPredio = ticket.getLocalPredio();
+        prioridade = ticket.getPrioridade();
+        status = ticket.getStatus();
+        solicitador = ticket.getSolicitador();
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTicketCode() {
+        return ticketCode;
+    }
+
+    public void setTicketCode(String ticketCode) {
+        this.ticketCode = ticketCode;
     }
 
     public String getSolicitador() {
