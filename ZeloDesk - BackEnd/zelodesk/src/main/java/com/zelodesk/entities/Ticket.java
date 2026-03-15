@@ -1,5 +1,6 @@
 package com.zelodesk.entities;
 
+import com.zelodesk.enums.PrioridadeEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +19,7 @@ public class Ticket {
     private String descricao;
     private String categoria;  // Transformar em enum
     private String localPredio;
-    private String prioridade; // Transformar em enum
+    private PrioridadeEnum prioridade; // Transformar em enum
     private String status;
     private String solicitador;
 
