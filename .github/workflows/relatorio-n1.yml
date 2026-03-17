@@ -1,0 +1,50 @@
+name: Atualizar PDF do relatorio N1
+
+on:
+  push:
+    paths:
+      - "docs/relatorio-n1.tex"
+      - "docs/diagramas/**"
+      - "docs/wireframe/**"
+      - ".github/workflows/relatorio-n1.yml"
+
+jobs:
+  build-relatorio:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gerar diagramas PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y plantuml graphviz
+          plantuml -tpng docs/diagramas/*.puml
+
+      - uses: xu-cheng/latex-action@v3
+        with:
+          root_file: relatorio-n1.tex
+          working_directory: docs
+          args: -pdf -file-line-error -halt-on-error -interaction=nonstopmode
+
+      - name: Limpar arquivos temporarios
+        run: |
+          rm -f docs/relatorio-n1.aux
+          rm -f docs/relatorio-n1.fdb_latexmk
+          rm -f docs/relatorio-n1.fls
+          rm -f docs/relatorio-n1.log
+          rm -f docs/relatorio-n1.out
+          rm -f docs/relatorio-n1.toc
+          rm -f docs/diagramas/arquitetura-cap6-componentes.png
+          rm -f docs/diagramas/diagrama-classe-dominio-uc01-abrir-ticket.png
+          rm -f docs/diagramas/diagrama-classe-dominio-uc02-triagem-atribuicao.png
+          rm -f docs/diagramas/diagrama-classe-dominio-uc03-execucao-conclusao.png
+          rm -f docs/diagramas/diagrama-sequencia-uc01-abrir-ticket.png
+          rm -f docs/diagramas/diagrama-sequencia-uc02-triagem-atribuicao.png
+          rm -f docs/diagramas/diagrama-sequencia-uc03-execucao-conclusao.png
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Atualiza PDF do relatorio N1
+          file_pattern: docs/relatorio-n1.pdf
