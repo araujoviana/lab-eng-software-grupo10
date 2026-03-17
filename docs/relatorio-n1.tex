@@ -19,7 +19,15 @@
 \newcommand{\diagramafull}[2]{%
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth,height=0.62\textheight,keepaspectratio]{#1}
+    \IfFileExists{#1}{%
+        \includegraphics[width=\linewidth,height=0.62\textheight,keepaspectratio]{#1}%
+    }{%
+        \fbox{%
+            \parbox[c][0.35\textheight][c]{0.9\linewidth}{\centering
+            Arquivo de imagem nao encontrado:\\
+            \texttt{#1}}%
+        }%
+    }
     \caption{#2}
 \end{figure}
 }
