@@ -186,7 +186,7 @@ UC-03 -- Executar atendimento e concluir ticket & RF13, RF14, RF15, RF16, RF21 \
 \caption{Rastreabilidade dos casos de uso principais}
 \end{table}
 
-\section{Wireframes (Protótipos de Baixa Fidelidade)}
+\section{Wireframes (Protótipos de Interface)}
 
 Este capítulo apresenta os wireframes construídos para validar navegação, distribuição
 de informações e fluxo operacional do MVP antes da implementação final da interface.
@@ -271,9 +271,9 @@ e não apenas os casos principais do MVP.
 \subsubsection{UC-02 -- Realizar triagem e atribuir responsável}
 
 \textbf{Ator principal:} Triagem (Síndico/Administradora) \\
-\textbf{Objetivo:} classificar a demanda e encaminhar para execução. \\
+\textbf{Objetivo:} classificar a demanda e definir o encaminhamento adequado. \\
 \textbf{Pré-condições:} ticket existente com status \texttt{Aberto} ou \texttt{Em triagem}. \\
-\textbf{Pós-condições (sucesso):} ticket classificado com prioridade e responsável definido. \\
+\textbf{Pós-condições (sucesso):} ticket classificado com prioridade e decisão de triagem registrada (atribuição de responsável para execução, encerramento ou cancelamento). \\
 \textbf{Pós-condições (falha):} ticket permanece em fila de triagem, com justificativa registrada.
 
 \textbf{Cenário de sucesso principal}
@@ -293,12 +293,14 @@ e não apenas os casos principais do MVP.
     \item B1 -- Informação insuficiente: triagem solicita complemento ao solicitante e marca como \texttt{Aguardando solicitante}.
     \item B2 -- Sem executor disponível: ticket permanece em \texttt{Em triagem} até nova atribuição.
     \item B3 -- Ticket improcedente/duplicado: triagem cancela ticket com motivo registrado.
+    \item B4 -- Ticket resolvido sem execução: triagem encerra ticket com justificativa e registra auditoria.
 \end{itemize}
 
 \textbf{Regras de negócio associadas}
 \begin{itemize}
     \item RN-03: apenas perfil de triagem pode definir prioridade e atribuir responsável.
     \item RN-04: toda alteração de status e atribuição deve gerar registro de auditoria.
+    \item RN-07: encerramento administrativo exige motivo de encerramento registrado.
 \end{itemize}
 
 \subsubsection{UC-03 -- Executar atendimento e concluir ticket}
@@ -350,6 +352,18 @@ e não apenas os casos principais do MVP.
 
 Neste capítulo são apresentados os dois diagramas arquiteturais da entrega parcial:
 visão de componentes e visão de implantação.
+
+\subsection{Ferramentas e tecnologias adotadas}
+
+\begin{itemize}
+    \item Frontend em \textbf{Vue.js} para a interface web do sistema;
+    \item Backend em \textbf{Spring Boot (Java)} para API e regras de negócio;
+    \item Banco de dados relacional \textbf{PostgreSQL} para persistência principal;
+    \item Armazenamento de anexos e evidências em \textbf{Amazon S3};
+    \item Logs e monitoramento inicial em \textbf{CloudWatch Logs};
+    \item Versionamento e CI/CD com \textbf{GitHub} e \textbf{GitHub Actions};
+    \item Modelagem técnica com \textbf{PlantUML} e \textbf{draw.io}.
+\end{itemize}
 
 \subsection{Diagrama de componentes}
 
