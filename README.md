@@ -1,9 +1,9 @@
 # lab-eng-software-grupo10
 Projeto de Laboratorio de Engenharia de Software - Grupo 10
 
-> Link do kanban e documentação adicional do projeto estão no diretório docs
+> Link do kanban, LaTeX e documentação adicional do projeto estão no diretório docs
 
-### Stack (Até agora)
+### Stack 
 
 1. Frontend -> Vue.js
 2. Backend -> Spring Boot
