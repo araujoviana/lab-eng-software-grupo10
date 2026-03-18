@@ -149,12 +149,12 @@ RNF01 & O sistema deve garantir controle de acesso por perfil em todas as funcio
 RNF02 & O sistema deve armazenar credenciais de forma segura. & Alta \\ \hline
 RNF03 & O sistema deve manter trilha de auditoria das alterações. & Alta \\ \hline
 RNF04 & O sistema deve ter interface responsiva para desktop e mobile. & Alta \\ \hline
-RNF05 & O fluxo de abertura de ticket deve ser simples e direto. & Média \\ \hline
 RNF06 & O tempo de resposta de operações comuns deve ser de até 3 segundos em uso normal. & Alta \\ \hline
 RNF07 & O sistema deve garantir persistência e integridade dos dados. & Alta \\ \hline
 RNF08 & O histórico de alterações do ticket deve ser completo. & Alta \\ \hline
 RNF09 & O sistema deve expor API para integração entre frontend e backend. & Alta \\ \hline
 RNF10 & O sistema deve utilizar banco de dados PostgreSQL. & Alta \\ \hline
+RNF05 & O fluxo de abertura de ticket deve ser simples e direto. & Média \\ \hline
 \end{longtable}
 
 \subsection{Backlog inicial do MVP}
@@ -361,8 +361,7 @@ visão de componentes e visão de implantação.
     \item Banco de dados relacional \textbf{PostgreSQL} para persistência principal;
     \item Armazenamento de anexos e evidências em \textbf{Amazon S3};
     \item Logs e monitoramento inicial em \textbf{CloudWatch Logs};
-    \item Versionamento e CI/CD com \textbf{GitHub} e \textbf{GitHub Actions};
-    \item Modelagem técnica com \textbf{PlantUML} e \textbf{draw.io}.
+    \item CI/CD com \textbf{GitHub Actions};
 \end{itemize}
 
 \subsection{Diagrama de componentes}
