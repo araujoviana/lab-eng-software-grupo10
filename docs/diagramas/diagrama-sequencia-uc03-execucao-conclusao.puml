@@ -14,6 +14,7 @@ entity "ticket:Ticket" as Ticket
 entity "comentario:Comentario" as Comentario
 entity "anexo:Anexo" as Anexo
 entity "auditLog:AuditLog" as AuditLog
+entity "notificacao:Notificacao" as Notificacao
 
 AtorExecutor -> Tela: assumirTicket(ticketId)
 Tela -> Executor: iniciarAtendimento(ticketId)
@@ -38,6 +39,8 @@ else evidencia enviada
   Anexo --> Ticket: vincularEvidencia()
   Executor -> Ticket: atualizarStatus(Concluido)
   Executor -> AuditLog: registrarConclusao(ticket)
+  Executor -> Notificacao: notificarSolicitante(ticket)
+  Executor -> Notificacao: notificarTriagem(ticket)
   Executor --> Tela: confirmarConclusao()
   Tela --> AtorExecutor: exibirConclusaoRegistrada()
 end

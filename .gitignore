@@ -96,3 +96,9 @@ docs/diagramas/.$*.drawio.bkp
 *.backup
 *.bak
 .psql_history
+
+# ---------- Arquivos temporarios de analise/automacao ----------
+extract_text.py
+test_parse.py
+extracted_prof_materials.txt
+desc_projeto.txt
