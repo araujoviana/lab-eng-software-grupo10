@@ -1,4 +1,20 @@
 -------------------------------------------------------------------------------
 Test set: com.zelodesk.dtos.TicketDTOTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.zelodesk.dtos.TicketDTOTest
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.106 s <<< FAILURE! -- in com.zelodesk.dtos.TicketDTOTest
+com.zelodesk.dtos.TicketDTOTest.deveCriarDtoAPartirDeTicket -- Time elapsed: 0.026 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problems: 
+	The method getId() is undefined for the type Ticket
+	The method getId() is undefined for the type Ticket
+	The method getTitulo() is undefined for the type Ticket
+	The method getDescricao() is undefined for the type Ticket
+	The method getCategoria() is undefined for the type Ticket
+	The method getLocalPredio() is undefined for the type Ticket
+	The method getPrioridade() is undefined for the type Ticket
+	The method getStatus() is undefined for the type Ticket
+	The method getSolicitador() is undefined for the type Ticket
+
+	at com.zelodesk.dtos.TicketDTO.<init>(TicketDTO.java:34)
+	at com.zelodesk.dtos.TicketDTOTest.deveCriarDtoAPartirDeTicket(TicketDTOTest.java:25)
+
