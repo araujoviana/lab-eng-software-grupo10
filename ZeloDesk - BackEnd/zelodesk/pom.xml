@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<allure.version>2.29.1</allure.version>
 		<lombok.version>1.18.36</lombok.version>
+		<jacoco.version>0.8.12</jacoco.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -114,6 +115,25 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
