@@ -29,7 +29,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<allure.version>2.29.1</allure.version>
-		<lombok.version>1.18.34</lombok.version>
+		<lombok.version>1.18.36</lombok.version>
 	</properties>
 	<dependencies>
 		<dependency>

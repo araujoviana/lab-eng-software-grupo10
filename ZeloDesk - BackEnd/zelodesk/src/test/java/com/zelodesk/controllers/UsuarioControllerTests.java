@@ -35,10 +35,15 @@ public class UsuarioControllerTests {
 
 	private String obterToken(String email, String senha) throws Exception {
 		String requestBody = "grant_type=password&username=" + email + "&password=" + senha
-				+ "&client_id=zelodesk-client&client_secret=zelodesk-secret&scope=read%20write";
+				+ "&scope=read%20write";
+
+		// Client credentials via Basic Authentication header
+		String clientAuth = java.util.Base64.getEncoder()
+				.encodeToString("zelodesk-client:zelodesk-secret".getBytes());
 
 		MvcResult result = mockMvc.perform(
 				post("/oauth2/token")
+						.header("Authorization", "Basic " + clientAuth)
 						.contentType("application/x-www-form-urlencoded")
 						.content(requestBody))
 				.andExpect(status().isOk())
