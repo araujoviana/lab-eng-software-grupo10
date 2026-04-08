@@ -43,6 +43,22 @@ coverage/
 *.tsbuildinfo
 
 # ---------- Backend artifacts (Java/Spring + Python legado) ----------
+# Java/Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+.settings/
+.classpath
+.project
+.factorypath
+
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
