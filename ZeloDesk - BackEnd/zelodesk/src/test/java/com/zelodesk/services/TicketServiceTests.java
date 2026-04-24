@@ -3,6 +3,7 @@ package com.zelodesk.services;
 import com.zelodesk.dtos.TicketDTO;
 import com.zelodesk.enums.CategoriaEnum;
 import com.zelodesk.enums.PrioridadeEnum;
+import com.zelodesk.enums.StatusEnum;
 import com.zelodesk.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,7 @@ public class TicketServiceTests {
         TicketDTO resultado = ticketService.insertTicket(dto);
 
         assertEquals(PrioridadeEnum.BAIXA, resultado.getPrioridade());
-        assertEquals("Aberto", resultado.getStatus());
+        assertEquals(StatusEnum.ABERTO, resultado.getStatus());
     }
 
     @Test
@@ -77,9 +78,9 @@ public class TicketServiceTests {
     public void testUpdateStatusEmAndamento() {
         TicketDTO criado = ticketService.insertTicket(criarTicketValido());
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Em Andamento");
+        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), StatusEnum.EM_ANDAMENTO);
 
-        assertEquals("Em Andamento", atualizado.getStatus(), "Status deve ser Em Andamento");
+        assertEquals(StatusEnum.EM_ANDAMENTO, atualizado.getStatus(), "Status deve ser Em Andamento");
         assertEquals(criado.getId(), atualizado.getId(), "ID deve ser o mesmo");
     }
 
@@ -88,9 +89,9 @@ public class TicketServiceTests {
     public void testUpdateStatusConcluido() {
         TicketDTO criado = ticketService.insertTicket(criarTicketValido());
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Concluído");
+        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), StatusEnum.CONCLUIDO);
 
-        assertEquals("Concluído", atualizado.getStatus(), "Status deve ser Concluído");
+        assertEquals(StatusEnum.CONCLUIDO, atualizado.getStatus(), "Status deve ser Concluído");
     }
 
     @Test
@@ -98,16 +99,16 @@ public class TicketServiceTests {
     public void testUpdateStatusCancelado() {
         TicketDTO criado = ticketService.insertTicket(criarTicketValido());
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Cancelado");
+        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), StatusEnum.CANCELADO);
 
-        assertEquals("Cancelado", atualizado.getStatus(), "Status deve ser Cancelado");
+        assertEquals(StatusEnum.CANCELADO, atualizado.getStatus(), "Status deve ser Cancelado");
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao mudar status de ticket inexistente")
     public void testUpdateStatusTicketInexistente() {
         assertThrows(ResourceNotFoundException.class, () -> {
-            ticketService.updateStatus(999L, "Em Andamento");
+            ticketService.updateStatus(999L, null);
         }, "Deve lançar ResourceNotFoundException para ticket inexistente");
     }
 }

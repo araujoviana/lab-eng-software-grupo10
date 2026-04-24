@@ -2,6 +2,7 @@ package com.zelodesk.controllers;
 
 import com.zelodesk.dtos.TicketDTO;
 import com.zelodesk.dtos.TicketMetricaDTO;
+import com.zelodesk.enums.StatusEnum;
 import com.zelodesk.services.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class TicketController {
     }
 
     @PatchMapping(value = "/{id}/status")
-    public ResponseEntity<TicketDTO> updateStatus(@PathVariable Long id, @RequestParam String novoStatus){
+    public ResponseEntity<TicketDTO> updateStatus(@PathVariable Long id, @RequestParam StatusEnum novoStatus){
         TicketDTO ticketDTO = ticketService.updateStatus(id, novoStatus);
         return ResponseEntity.ok().body(ticketDTO);
     }

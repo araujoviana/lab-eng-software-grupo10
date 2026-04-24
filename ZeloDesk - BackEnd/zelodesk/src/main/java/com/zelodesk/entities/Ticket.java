@@ -2,6 +2,7 @@ package com.zelodesk.entities;
 
 import com.zelodesk.enums.CategoriaEnum;
 import com.zelodesk.enums.PrioridadeEnum;
+import com.zelodesk.enums.StatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +32,9 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private PrioridadeEnum prioridade; // Transformar em enum
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StatusEnum status;
+
     private String solicitador;
 
     @ManyToOne
@@ -40,7 +43,7 @@ public class Ticket {
     @ManyToOne
     private Usuario executor;
 
-    public Ticket(Long id, String titulo, String descricao, CategoriaEnum categoria, String localPredio, PrioridadeEnum prioridade, String status, String solicitador) {
+    public Ticket(Long id, String titulo, String descricao, CategoriaEnum categoria, String localPredio, PrioridadeEnum prioridade, StatusEnum status, String solicitador) {
         this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
