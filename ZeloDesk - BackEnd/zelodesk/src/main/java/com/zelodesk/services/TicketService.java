@@ -3,6 +3,7 @@ package com.zelodesk.services;
 import com.zelodesk.dtos.TicketDTO;
 import com.zelodesk.dtos.TicketMetricaDTO;
 import com.zelodesk.entities.Ticket;
+import com.zelodesk.enums.StatusEnum;
 import com.zelodesk.repositories.TicketRepository;
 import com.zelodesk.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,13 @@ public class TicketService {
         ticket.setCategoria(ticketDTO.getCategoria());
         ticket.setLocalPredio(ticketDTO.getLocalPredio());
         ticket.setPrioridade(ticketDTO.getPrioridade());
-        ticket.setStatus("Aberto");
+        ticket.setStatus(StatusEnum.ABERTO);
         ticket.setSolicitador(ticketDTO.getSolicitador());
         ticket = ticketRepository.save(ticket);
         return new TicketDTO(ticket);
     }
 
-    public TicketDTO updateStatus(Long id, String novoStatus) {
+    public TicketDTO updateStatus(Long id, StatusEnum novoStatus) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket não encontrado: " + id));
         ticket.setStatus(novoStatus);
