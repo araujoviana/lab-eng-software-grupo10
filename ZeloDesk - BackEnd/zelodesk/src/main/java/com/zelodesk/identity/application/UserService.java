@@ -48,9 +48,21 @@ public class UserService implements UserDetailsService {
 		return new UserDTO(user);
 	}
 
+	public UserDTO findByEmail(String email){
+		Usuario user = repository.findByEmail(email).orElseThrow(
+				() -> new ResourceNotFoundException("Usuario nao encontrado"));
+		return new UserDTO(user);
+	}
+
 	public Page<UserDTO> findAll(Pageable pageable){
 		Page<Usuario> user = repository.findAll(pageable);
 		return user.map(x -> new UserDTO(x));
 
+	}
+
+	public List<UserDTO> findExecutores(){
+		return repository.findByRoleAuthority("ROLE_EXECUTOR").stream()
+				.map(UserDTO::new)
+				.toList();
 	}
 }

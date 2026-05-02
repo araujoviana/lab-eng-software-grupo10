@@ -6,8 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
+
+    Optional<Usuario> findByEmail(String email);
+
+    @Query("""
+            SELECT u FROM Usuario u
+            JOIN u.roles r
+            WHERE r.authority = :authority
+            ORDER BY u.nome
+            """)
+    List<Usuario> findByRoleAuthority(String authority);
 
     @Query(nativeQuery = true, value = """
 				SELECT tb_usuario.email AS email, tb_usuario.senha AS senha, tb_role.id AS roleId, tb_role.authority AS authority
