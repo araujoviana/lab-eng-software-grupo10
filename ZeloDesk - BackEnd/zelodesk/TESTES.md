@@ -2,7 +2,7 @@
 
 ## Estrutura dos Testes
 
-Os testes foram organizados em 5 arquivos — **33 testes no total**.
+Os testes foram organizados em 6 arquivos — **36 testes no total**.
 
 ---
 
@@ -33,13 +33,13 @@ Os testes foram organizados em 5 arquivos — **33 testes no total**.
 
 | Teste | Descrição |
 |-------|-----------|
-| `testInsertTicket` | Cria ticket com sucesso e status inicial "Aberto" |
-| `testInsertTicketGeraTicketCode` | TicketCode gerado no formato TKT-XXX |
-| `testInsertTicketPrioridadeBaixa` | Cria ticket com prioridade BAIXA |
-| `testUpdateStatusEmAndamento` | Muda status para "Em Andamento" |
-| `testUpdateStatusConcluido` | Muda status para "Concluído" |
-| `testUpdateStatusCancelado` | Muda status para "Cancelado" |
-| `testUpdateStatusTicketInexistente` | Lança exceção para ticket inexistente |
+| `deveAbrirTicketComHistoricoInicial` | UC-01 cria ticket com status inicial e histórico |
+| `deveListarTicketsComFiltroDeStatus` | RF07 lista tickets com filtro de status |
+| `deveRealizarTriagemEAtribuirExecutor` | UC-02 define prioridade e executor |
+| `deveExigirResponsavelNaTriagem` | Valida regra de atribuição de responsável |
+| `deveConcluirTicketComComentarioEEvidencia` | UC-03 conclui ticket com comentário e evidência |
+| `deveBloquearConclusaoSemEvidencia` | Bloqueia conclusão sem evidência final |
+| `deveFalharParaTicketInexistente` | Lança exceção para ticket inexistente |
 
 ---
 
@@ -48,13 +48,14 @@ Os testes foram organizados em 5 arquivos — **33 testes no total**.
 
 | Teste | Descrição |
 |-------|-----------|
-| `testInsertTicketAsUsuario` | Usuário cria ticket (200 OK) |
-| `testInsertTicketAsAdmin` | Admin cria ticket (200 OK) |
-| `testInsertTicketSemToken` | Sem token retorna 401 |
-| `testUpdateStatusEmAndamento` | PATCH muda status para "Em Andamento" |
-| `testUpdateStatusConcluido` | PATCH muda status para "Concluído" |
-| `testUpdateStatusCancelado` | PATCH muda status para "Cancelado" |
-| `testUpdateStatusTicketInexistente` | PATCH com ID inválido retorna 404 |
+| `deveCriarTicketComoSolicitante` | UC-01 cria ticket autenticado |
+| `deveExigirAutenticacao` | Endpoints de ticket exigem token |
+| `deveListarTickets` | RF07 lista tickets autenticado |
+| `deveRealizarTriagem` | UC-02 registra triagem via API |
+| `deveBloquearTriagemParaSolicitante` | Solicitante não acessa triagem |
+| `deveConcluirTicket` | UC-03 conclui ticket via API |
+| `deveBloquearConclusaoSemEvidencia` | API rejeita conclusão sem evidência |
+| `deveRetornar404ParaTicketInexistente` | Busca inexistente retorna 404 |
 
 ---
 
@@ -86,6 +87,9 @@ Os testes foram organizados em 5 arquivos — **33 testes no total**.
 | 2 | Usuario Teste | usuario@zelodesk.com | ROLE_USUARIO |
 | 3 | Carlos Silva | carlos@zelodesk.com | ROLE_USUARIO |
 | 4 | Ana Souza | ana@zelodesk.com | ROLE_USUARIO |
+| 5 | Maria Oliveira | solicitante@zelodesk.com | ROLE_SOLICITANTE |
+| 6 | Carla Mendes | triagem@zelodesk.com | ROLE_TRIAGEM |
+| 7 | Joao Pereira | executor@zelodesk.com | ROLE_EXECUTOR |
 
 **Senha para todos:** `123456`
 

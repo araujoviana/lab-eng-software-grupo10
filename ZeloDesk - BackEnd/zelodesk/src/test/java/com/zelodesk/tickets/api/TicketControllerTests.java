@@ -2,6 +2,7 @@ package com.zelodesk.tickets.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zelodesk.tickets.application.TicketService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,20 +35,21 @@ public class TicketControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String tokenUsuario;
-    private String tokenAdmin;
+    private String tokenSolicitante;
+    private String tokenTriagem;
+    private String tokenExecutor;
 
     @BeforeEach
     public void setup() throws Exception {
-        tokenUsuario = obterToken("usuario@zelodesk.com", "123456");
-        tokenAdmin   = obterToken("admin@zelodesk.com",   "123456");
+        tokenSolicitante = obterToken("solicitante@zelodesk.com", "123456");
+        tokenTriagem = obterToken("triagem@zelodesk.com", "123456");
+        tokenExecutor = obterToken("executor@zelodesk.com", "123456");
     }
 
     private String obterToken(String email, String senha) throws Exception {
         String body = "grant_type=password&username=" + email + "&password=" + senha
                 + "&scope=read%20write";
 
-        // Client credentials via Basic Authentication header
         String clientAuth = java.util.Base64.getEncoder()
                 .encodeToString("zelodesk-client:zelodesk-secret".getBytes());
 
@@ -57,134 +64,164 @@ public class TicketControllerTests {
         return node.get("access_token").asText();
     }
 
-    private String corpoTicket(String titulo, String descricao, String categoria, String local, String prioridade, String solicitador) {
-        return String.format("""
+    private String corpoTicket() {
+        return """
                 {
-                  "titulo": "%s",
-                  "descricao": "%s",
-                  "categoria": "%s",
-                  "localPredio": "%s",
-                  "prioridade": "%s",
-                  "solicitador": "%s"
+                  "titulo": "Vazamento na pia",
+                  "descricao": "Pia do banheiro com vazamento constante",
+                  "categoria": "HIDRAULICA",
+                  "localPredio": "Bloco A",
+                  "prioridade": "ALTA",
+                  "solicitador": "Maria Oliveira",
+                  "anexoUrl": "https://exemplo.com/foto-vazamento.jpg"
                 }
-                """, titulo, descricao, categoria, local, prioridade, solicitador);
+                """;
+    }
+
+    private Long criarTicket() throws Exception {
+        MvcResult createResult = mockMvc.perform(post("/tickets")
+                        .header("Authorization", "Bearer " + tokenSolicitante)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(corpoTicket()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+    }
+
+    private Long criarTicketTriado() throws Exception {
+        Long id = criarTicket();
+
+        mockMvc.perform(patch("/tickets/{id}/triagem", id)
+                        .header("Authorization", "Bearer " + tokenTriagem)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "prioridade": "ALTA",
+                                  "decisao": "ATRIBUIR",
+                                  "executorId": 7
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        return id;
     }
 
     @Test
-    @DisplayName("Usuário autenticado deve criar ticket com sucesso")
-    public void testInsertTicketAsUsuario() throws Exception {
-        String body = corpoTicket("Vazamento na pia", "Pia com vazamento", "HIDRAULICA", "Bloco A", "ALTA", "usuario@zelodesk.com");
-
+    @DisplayName("UC-01 solicitante autenticado deve criar ticket")
+    public void deveCriarTicketComoSolicitante() throws Exception {
         mockMvc.perform(post("/tickets")
-                        .header("Authorization", "Bearer " + tokenUsuario)
+                        .header("Authorization", "Bearer " + tokenSolicitante)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(corpoTicket()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.titulo", equalTo("Vazamento na pia")))
-                .andExpect(jsonPath("$.status", equalTo("Aberto")))
-                .andExpect(jsonPath("$.ticketCode", startsWith("TKT-")));
+                .andExpect(jsonPath("$.ticketCode", startsWith("TKT-")))
+                .andExpect(jsonPath("$.status", equalTo(TicketService.STATUS_ABERTO)))
+                .andExpect(jsonPath("$.historico[0].acao", equalTo("Ticket aberto")));
     }
 
     @Test
-    @DisplayName("Admin autenticado deve criar ticket com sucesso")
-    public void testInsertTicketAsAdmin() throws Exception {
-        String body = corpoTicket("Lâmpada queimada", "Lâmpada do corredor", "ELETRICA", "Bloco B", "BAIXA", "admin@zelodesk.com");
-
-        mockMvc.perform(post("/tickets")
-                        .header("Authorization", "Bearer " + tokenAdmin)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", equalTo("Aberto")))
-                .andExpect(jsonPath("$.categoria", equalTo("ELETRICA")));
-    }
-
-    @Test
-    @DisplayName("Requisição sem token deve ser permitida (permitAll configurado)")
-    public void testInsertTicketSemToken() throws Exception {
-        String body = corpoTicket("Teste", "Desc", "LIMPEZA", "Bloco C", "MEDIA", "teste@zelodesk.com");
-
-        // NOTA: Atualmente o endpoint permite acesso sem autenticação devido a .permitAll()
-        // no ResourceServerConfig. Se quiser proteger, remover permitAll() e usar @PreAuthorize
+    @DisplayName("Endpoints de ticket devem exigir autenticacao")
+    public void deveExigirAutenticacao() throws Exception {
         mockMvc.perform(post("/tickets")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk());  // Mudado de isUnauthorized() para isOk()
+                        .content(corpoTicket()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Em Andamento")
-    public void testUpdateStatusEmAndamento() throws Exception {
-        // Criar ticket primeiro
-        String body = corpoTicket("Problema elétrico", "Curto no corredor", "ELETRICA", "Bloco C", "ALTA", "usuario@zelodesk.com");
+    @DisplayName("RF07 deve listar tickets para usuario autenticado")
+    public void deveListarTickets() throws Exception {
+        criarTicket();
 
-        MvcResult createResult = mockMvc.perform(post("/tickets")
-                        .header("Authorization", "Bearer " + tokenAdmin)
+        mockMvc.perform(get("/tickets")
+                        .header("Authorization", "Bearer " + tokenSolicitante))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("UC-02 triagem deve atribuir executor")
+    public void deveRealizarTriagem() throws Exception {
+        Long id = criarTicket();
+
+        mockMvc.perform(patch("/tickets/{id}/triagem", id)
+                        .header("Authorization", "Bearer " + tokenTriagem)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("""
+                                {
+                                  "prioridade": "ALTA",
+                                  "decisao": "ATRIBUIR",
+                                  "executorId": 7
+                                }
+                                """))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
-
-        // Mudar status
-        mockMvc.perform(patch("/tickets/{id}/status", id)
-                        .header("Authorization", "Bearer " + tokenAdmin)
-                        .param("novoStatus", "Em Andamento"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", equalTo("Em Andamento")))
-                .andExpect(jsonPath("$.id", equalTo(id.intValue())));
+                .andExpect(jsonPath("$.status", equalTo(TicketService.STATUS_EM_EXECUCAO)))
+                .andExpect(jsonPath("$.executorId", equalTo(7)))
+                .andExpect(jsonPath("$.responsavelNome", equalTo("Joao Pereira")));
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Concluído")
-    public void testUpdateStatusConcluido() throws Exception {
-        String body = corpoTicket("Piso danificado", "Piso solto", "MANUTENCAO", "Bloco D", "MEDIA", "usuario@zelodesk.com");
+    @DisplayName("Solicitante nao deve realizar triagem")
+    public void deveBloquearTriagemParaSolicitante() throws Exception {
+        Long id = criarTicket();
 
-        MvcResult createResult = mockMvc.perform(post("/tickets")
-                        .header("Authorization", "Bearer " + tokenAdmin)
+        mockMvc.perform(patch("/tickets/{id}/triagem", id)
+                        .header("Authorization", "Bearer " + tokenSolicitante)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
-
-        mockMvc.perform(patch("/tickets/{id}/status", id)
-                        .header("Authorization", "Bearer " + tokenAdmin)
-                        .param("novoStatus", "Concluído"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", equalTo("Concluído")));
+                        .content("""
+                                {
+                                  "prioridade": "ALTA",
+                                  "decisao": "ATRIBUIR",
+                                  "executorId": 7
+                                }
+                                """))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Cancelado")
-    public void testUpdateStatusCancelado() throws Exception {
-        String body = corpoTicket("Câmera sem sinal", "Câmera offline", "SEGURANCA", "Entrada principal", "ALTA", "usuario@zelodesk.com");
+    @DisplayName("UC-03 executor deve concluir ticket com evidencia")
+    public void deveConcluirTicket() throws Exception {
+        Long id = criarTicketTriado();
 
-        MvcResult createResult = mockMvc.perform(post("/tickets")
-                        .header("Authorization", "Bearer " + tokenAdmin)
+        mockMvc.perform(patch("/tickets/{id}/concluir", id)
+                        .header("Authorization", "Bearer " + tokenExecutor)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("""
+                                {
+                                  "comentarioAtendimento": "Reparo realizado e validado no local.",
+                                  "evidenciaUrl": "https://exemplo.com/evidencia-final.jpg"
+                                }
+                                """))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        Long id = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
-
-        mockMvc.perform(patch("/tickets/{id}/status", id)
-                        .header("Authorization", "Bearer " + tokenAdmin)
-                        .param("novoStatus", "Cancelado"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", equalTo("Cancelado")));
+                .andExpect(jsonPath("$.status", equalTo(TicketService.STATUS_CONCLUIDO)))
+                .andExpect(jsonPath("$.evidenciaUrl", equalTo("https://exemplo.com/evidencia-final.jpg")))
+                .andExpect(jsonPath("$.comentarios[0].texto", equalTo("Reparo realizado e validado no local.")));
     }
 
     @Test
-    @DisplayName("Mudar status de ticket inexistente deve retornar 404")
-    public void testUpdateStatusTicketInexistente() throws Exception {
-        mockMvc.perform(patch("/tickets/999/status")
-                        .header("Authorization", "Bearer " + tokenAdmin)
-                        .param("novoStatus", "Em Andamento"))
+    @DisplayName("UC-03 conclusao sem evidencia deve retornar 400")
+    public void deveBloquearConclusaoSemEvidencia() throws Exception {
+        Long id = criarTicketTriado();
+
+        mockMvc.perform(patch("/tickets/{id}/concluir", id)
+                        .header("Authorization", "Bearer " + tokenExecutor)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "comentarioAtendimento": "Reparo realizado.",
+                                  "evidenciaUrl": ""
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Ticket inexistente deve retornar 404")
+    public void deveRetornar404ParaTicketInexistente() throws Exception {
+        mockMvc.perform(get("/tickets/999")
+                        .header("Authorization", "Bearer " + tokenSolicitante))
                 .andExpect(status().isNotFound());
     }
 }

@@ -15,14 +15,17 @@ Adiciona autenticação e autorização à aplicação, protegendo os endpoints 
 Habilita a validação de dados nas requisições, permitindo o uso de anotações como `@NotNull`, `@NotBlank`, `@Size`, entre outras.
 
 **Spring Boot H2 Console**
-Disponibiliza uma interface web para visualização e manipulação do banco de dados H2 diretamente pelo navegador.
+Disponibiliza uma interface web para visualização do banco H2 usado nos testes automatizados.
 
 ---
 
 ## Banco de Dados
 
+**PostgreSQL**
+Banco principal do projeto no perfil `dev`, configurado por `DB_URL`, `DB_USER` e `DB_PASSWORD`.
+
 **H2 Database**
-Banco de dados em memória utilizado durante o desenvolvimento. Os dados são reiniciados a cada execução da aplicação.
+Banco em memória utilizado no perfil `test` para execução rápida dos testes automatizados.
 
 ---
 

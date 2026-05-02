@@ -3,14 +3,22 @@ package com.zelodesk.tickets.application;
 import com.zelodesk.shared.exception.ResourceNotFoundException;
 import com.zelodesk.tickets.domain.CategoriaEnum;
 import com.zelodesk.tickets.domain.PrioridadeEnum;
+import com.zelodesk.tickets.dto.TicketConclusaoDTO;
 import com.zelodesk.tickets.dto.TicketDTO;
+import com.zelodesk.tickets.dto.TicketTriagemDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -23,91 +31,106 @@ public class TicketServiceTests {
     private TicketDTO criarTicketValido() {
         TicketDTO dto = new TicketDTO();
         dto.setTitulo("Vazamento na pia");
-        dto.setDescricao("Pia do banheiro com vazamento");
+        dto.setDescricao("Pia do banheiro com vazamento constante");
         dto.setCategoria(CategoriaEnum.HIDRAULICA);
         dto.setLocalPredio("Bloco A - Sala 10");
         dto.setPrioridade(PrioridadeEnum.ALTA);
-        dto.setSolicitador("Usuario Teste");
+        dto.setSolicitador("Maria Oliveira");
+        dto.setAnexoUrl("https://exemplo.com/foto-vazamento.jpg");
+        return dto;
+    }
+
+    private TicketTriagemDTO triagemParaExecutor() {
+        TicketTriagemDTO dto = new TicketTriagemDTO();
+        dto.setPrioridade(PrioridadeEnum.ALTA);
+        dto.setDecisao("ATRIBUIR");
+        dto.setExecutorId(7L);
         return dto;
     }
 
     @Test
-    @DisplayName("Deve criar ticket com sucesso e status Aberto")
-    public void testInsertTicket() {
-        TicketDTO dto = criarTicketValido();
+    @DisplayName("UC-01 deve abrir ticket com status inicial e historico")
+    public void deveAbrirTicketComHistoricoInicial() {
+        TicketDTO resultado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
 
-        TicketDTO resultado = ticketService.insertTicket(dto);
-
-        assertNotNull(resultado, "TicketDTO não deve ser nulo");
-        assertNotNull(resultado.getId(), "ID deve ser gerado");
-        assertEquals("Vazamento na pia", resultado.getTitulo());
-        assertEquals("Aberto", resultado.getStatus(), "Status inicial deve ser Aberto");
+        assertNotNull(resultado.getId());
+        assertTrue(resultado.getTicketCode().startsWith("TKT-"));
+        assertEquals(TicketService.STATUS_ABERTO, resultado.getStatus());
+        assertEquals("Maria Oliveira", resultado.getSolicitador());
         assertEquals(CategoriaEnum.HIDRAULICA, resultado.getCategoria());
-        assertEquals(PrioridadeEnum.ALTA, resultado.getPrioridade());
-        assertEquals("Usuario Teste", resultado.getSolicitador());
+        assertFalse(resultado.getHistorico().isEmpty());
+        assertEquals("Ticket aberto", resultado.getHistorico().get(0).getAcao());
     }
 
     @Test
-    @DisplayName("Deve gerar ticketCode no formato TKT-XXX ao criar")
-    public void testInsertTicketGeraTicketCode() {
-        TicketDTO dto = criarTicketValido();
+    @DisplayName("RF07 deve listar tickets cadastrados com filtros opcionais")
+    public void deveListarTicketsComFiltroDeStatus() {
+        TicketDTO criado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
 
-        TicketDTO resultado = ticketService.insertTicket(dto);
+        List<TicketDTO> abertos = ticketService.findAll(TicketService.STATUS_ABERTO, null, null);
 
-        assertNotNull(resultado.getTicketCode(), "TicketCode não deve ser nulo");
-        assertTrue(resultado.getTicketCode().startsWith("TKT-"), "TicketCode deve começar com TKT-");
+        assertTrue(abertos.stream().anyMatch(ticket -> ticket.getId().equals(criado.getId())));
     }
 
     @Test
-    @DisplayName("Deve criar ticket com prioridade BAIXA")
-    public void testInsertTicketPrioridadeBaixa() {
-        TicketDTO dto = criarTicketValido();
-        dto.setPrioridade(PrioridadeEnum.BAIXA);
-        dto.setTitulo("Lâmpada queimada");
-        dto.setCategoria(CategoriaEnum.ELETRICA);
+    @DisplayName("UC-02 deve realizar triagem e atribuir executor")
+    public void deveRealizarTriagemEAtribuirExecutor() {
+        TicketDTO criado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
 
-        TicketDTO resultado = ticketService.insertTicket(dto);
+        TicketDTO triado = ticketService.realizarTriagem(criado.getId(), triagemParaExecutor(), "triagem@zelodesk.com");
 
-        assertEquals(PrioridadeEnum.BAIXA, resultado.getPrioridade());
-        assertEquals("Aberto", resultado.getStatus());
+        assertEquals(TicketService.STATUS_EM_EXECUCAO, triado.getStatus());
+        assertEquals(7L, triado.getExecutorId());
+        assertEquals("Joao Pereira", triado.getResponsavelNome());
+        assertTrue(triado.getHistorico().stream().anyMatch(item -> item.getAcao().equals("Triagem registrada")));
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Em Andamento")
-    public void testUpdateStatusEmAndamento() {
-        TicketDTO criado = ticketService.insertTicket(criarTicketValido());
+    @DisplayName("UC-02 deve exigir responsavel para atribuir ticket")
+    public void deveExigirResponsavelNaTriagem() {
+        TicketDTO criado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
+        TicketTriagemDTO triagem = triagemParaExecutor();
+        triagem.setExecutorId(null);
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Em Andamento");
-
-        assertEquals("Em Andamento", atualizado.getStatus(), "Status deve ser Em Andamento");
-        assertEquals(criado.getId(), atualizado.getId(), "ID deve ser o mesmo");
+        assertThrows(IllegalArgumentException.class,
+                () -> ticketService.realizarTriagem(criado.getId(), triagem, "triagem@zelodesk.com"));
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Concluído")
-    public void testUpdateStatusConcluido() {
-        TicketDTO criado = ticketService.insertTicket(criarTicketValido());
+    @DisplayName("UC-03 deve concluir ticket com comentario e evidencia")
+    public void deveConcluirTicketComComentarioEEvidencia() {
+        TicketDTO criado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
+        TicketDTO triado = ticketService.realizarTriagem(criado.getId(), triagemParaExecutor(), "triagem@zelodesk.com");
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Concluído");
+        TicketConclusaoDTO conclusao = new TicketConclusaoDTO();
+        conclusao.setComentarioAtendimento("Reparo realizado e ambiente conferido.");
+        conclusao.setEvidenciaUrl("https://exemplo.com/evidencia-final.jpg");
 
-        assertEquals("Concluído", atualizado.getStatus(), "Status deve ser Concluído");
+        TicketDTO concluido = ticketService.concluirTicket(triado.getId(), conclusao, "executor@zelodesk.com");
+
+        assertEquals(TicketService.STATUS_CONCLUIDO, concluido.getStatus());
+        assertEquals("https://exemplo.com/evidencia-final.jpg", concluido.getEvidenciaUrl());
+        assertFalse(concluido.getComentarios().isEmpty());
+        assertTrue(concluido.getHistorico().stream().anyMatch(item -> item.getAcao().equals("Ticket concluido")));
     }
 
     @Test
-    @DisplayName("Deve mudar status do ticket para Cancelado")
-    public void testUpdateStatusCancelado() {
-        TicketDTO criado = ticketService.insertTicket(criarTicketValido());
+    @DisplayName("UC-03 deve bloquear conclusao sem evidencia")
+    public void deveBloquearConclusaoSemEvidencia() {
+        TicketDTO criado = ticketService.insertTicket(criarTicketValido(), "solicitante@zelodesk.com");
+        TicketDTO triado = ticketService.realizarTriagem(criado.getId(), triagemParaExecutor(), "triagem@zelodesk.com");
 
-        TicketDTO atualizado = ticketService.updateStatus(criado.getId(), "Cancelado");
+        TicketConclusaoDTO conclusao = new TicketConclusaoDTO();
+        conclusao.setComentarioAtendimento("Reparo realizado.");
+        conclusao.setEvidenciaUrl(" ");
 
-        assertEquals("Cancelado", atualizado.getStatus(), "Status deve ser Cancelado");
+        assertThrows(IllegalArgumentException.class,
+                () -> ticketService.concluirTicket(triado.getId(), conclusao, "executor@zelodesk.com"));
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao mudar status de ticket inexistente")
-    public void testUpdateStatusTicketInexistente() {
-        assertThrows(ResourceNotFoundException.class, () -> {
-            ticketService.updateStatus(999L, "Em Andamento");
-        }, "Deve lançar ResourceNotFoundException para ticket inexistente");
+    @DisplayName("Deve lancar excecao ao buscar ticket inexistente")
+    public void deveFalharParaTicketInexistente() {
+        assertThrows(ResourceNotFoundException.class, () -> ticketService.findById(999L));
     }
 }
