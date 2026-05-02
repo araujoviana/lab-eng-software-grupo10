@@ -1,17 +1,21 @@
 <template>
   <div class="page-stack">
-    <section class="stats-grid">
+    <section class="stats-grid" aria-label="Indicadores">
       <article v-for="item in indicadores" :key="item.label" class="stat-card">
         <span class="stat-label">{{ item.label }}</span>
         <strong class="stat-value">{{ item.value }}</strong>
+        <p>{{ item.copy }}</p>
       </article>
     </section>
 
     <section class="content-grid">
       <article class="panel">
         <div class="panel-header panel-header--tight">
-          <h2 class="panel-title">Fila recente</h2>
-          <button type="button" class="ghost-button" @click="goToTickets">Ver lista</button>
+          <div>
+            <h2 class="panel-title">Chamados recentes</h2>
+            <p class="panel-copy">Ultimos tickets recebidos pela zeladoria.</p>
+          </div>
+          <button type="button" class="ghost-button" @click="s.page = 'tickets'">Ver todos</button>
         </div>
 
         <div v-if="recentes.length" class="ticket-list">
@@ -27,12 +31,12 @@
                 <h3 class="ticket-row-title">{{ ticket.titulo }}</h3>
                 <span class="status-pill" :class="statusClass(ticket.status)">{{ ticket.status }}</span>
               </div>
-
-              <p class="ticket-row-meta-line">#{{ ticket.id }} · {{ ticket.setor }} · {{ ticket.responsavel }}</p>
+              <p class="ticket-row-meta-line">
+                {{ ticketCode(ticket) }} · {{ categoryLabel(ticket.categoria) }} · {{ ticket.localPredio }}
+              </p>
             </div>
-
             <span class="priority-pill" :class="priorityClass(ticket.prioridade)">
-              {{ ticket.prioridade }}
+              {{ priorityLabel(ticket.prioridade) }}
             </span>
           </button>
         </div>
@@ -45,17 +49,18 @@
 
       <article class="panel">
         <div class="panel-header panel-header--tight">
-          <h2 class="panel-title">Status</h2>
+          <div>
+            <h2 class="panel-title">Distribuicao por status</h2>
+            <p class="panel-copy">Acompanhamento rapido do fluxo.</p>
+          </div>
         </div>
 
         <div class="progress-list">
           <div v-for="item in distribuicao" :key="item.label" class="progress-item">
             <div class="progress-label">
               <span>{{ item.label }}</span>
-
               <strong>{{ item.value }}</strong>
             </div>
-
             <div class="progress-track">
               <div class="progress-fill" :class="item.className" :style="{ width: ratio(item.value) }"></div>
             </div>
@@ -68,66 +73,44 @@
 
 <script setup>
 import { computed } from 'vue'
-import { store as s } from '../store'
+import {
+  categoryLabel,
+  priorityClass,
+  priorityLabel,
+  statusClass,
+  store as s,
+  ticketCode
+} from '../store'
 
 const total = computed(() => s.tickets.length)
 const abertos = computed(() => s.tickets.filter((ticket) => ticket.status === 'Aberto').length)
-const andamento = computed(() => s.tickets.filter((ticket) => ticket.status === 'Em Andamento').length)
-const concluidos = computed(() => s.tickets.filter((ticket) => ticket.status === 'Concluído').length)
-const prioridadeAlta = computed(() => s.tickets.filter((ticket) => ticket.prioridade === 'Alta').length)
+const triagem = computed(() => s.tickets.filter((ticket) => ['Em triagem', 'Aguardando solicitante'].includes(ticket.status)).length)
+const execucao = computed(() => s.tickets.filter((ticket) => ticket.status === 'Em execucao').length)
+const concluidos = computed(() => s.tickets.filter((ticket) => ticket.status === 'Concluido').length)
+const altaPrioridade = computed(() => s.tickets.filter((ticket) => ticket.prioridade === 'ALTA').length)
 const recentes = computed(() => s.tickets.slice(0, 5))
 
 const indicadores = computed(() => [
-  { label: 'Total', value: total.value },
-  { label: 'Abertos', value: abertos.value },
-  { label: 'Em atendimento', value: andamento.value },
-  { label: 'Alta prioridade', value: prioridadeAlta.value }
+  { label: 'Total', value: total.value, copy: 'tickets cadastrados' },
+  { label: 'Abertos', value: abertos.value, copy: 'aguardando triagem' },
+  { label: 'Em execucao', value: execucao.value, copy: 'com executor definido' },
+  { label: 'Alta prioridade', value: altaPrioridade.value, copy: 'exigem atencao' }
 ])
 
 const distribuicao = computed(() => [
   { label: 'Abertos', value: abertos.value, className: 'is-open' },
-  { label: 'Em andamento', value: andamento.value, className: 'is-progress' },
+  { label: 'Triagem', value: triagem.value, className: 'is-triage' },
+  { label: 'Execucao', value: execucao.value, className: 'is-progress' },
   { label: 'Concluidos', value: concluidos.value, className: 'is-done' }
 ])
 
-const statusClass = (status) => {
-  if (status === 'Aberto') {
-    return 'is-open'
-  }
-
-  if (status === 'Em Andamento') {
-    return 'is-progress'
-  }
-
-  return 'is-done'
-}
-
-const priorityClass = (priority) => {
-  if (priority === 'Alta') {
-    return 'is-high'
-  }
-
-  if (priority === 'Baixa') {
-    return 'is-low'
-  }
-
-  return 'is-medium'
-}
-
 const ratio = (value) => {
-  if (!total.value) {
-    return '0%'
-  }
-
-  return `${Math.round((value / total.value) * 100)}%`
-}
-
-const goToTickets = () => {
-  s.page = 'tickets'
+  if (!total.value) return '0%'
+  return `${Math.max(8, Math.round((value / total.value) * 100))}%`
 }
 
 const openTicket = (ticket) => {
-  s.selected = ticket
+  s.selectedId = ticket.id
   s.page = 'tickets'
 }
 </script>

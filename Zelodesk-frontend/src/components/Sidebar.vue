@@ -2,47 +2,43 @@
   <aside class="sidebar">
     <div class="brand-block">
       <div class="brand-mark">ZD</div>
-
       <div class="brand-copy">
-        <h2>Zelodesk</h2>
-        <p>Gestao de zeladoria</p>
+        <h2>Zelo Desk</h2>
+        <p>Tickets para condominios</p>
       </div>
     </div>
 
-    <button type="button" class="primary-button sidebar-button" @click="s.modal = true">
-      Novo ticket
-    </button>
-
-    <nav class="nav-list">
+    <nav class="nav-list" aria-label="Navegacao principal">
       <button
         v-for="item in items"
         :key="item.key"
         type="button"
         class="nav-item"
         :class="{ 'is-active': s.page === item.key }"
-        @click="go(item.key)"
+        @click="s.page = item.key"
       >
-        <span class="nav-label">{{ item.label }}</span>
+        <span>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.description }}</small>
+        </span>
         <span v-if="item.badge !== null" class="nav-badge">{{ item.badge }}</span>
       </button>
     </nav>
 
-    <div class="sidebar-card">
+    <section class="sidebar-card" aria-label="Resumo dos tickets">
       <div class="mini-metric">
-        <span>Tickets ativos</span>
-        <strong>{{ ativos }}</strong>
+        <span>Abertos</span>
+        <strong>{{ abertos }}</strong>
       </div>
-
+      <div class="mini-metric">
+        <span>Em execucao</span>
+        <strong>{{ execucao }}</strong>
+      </div>
       <div class="mini-metric">
         <span>Alta prioridade</span>
         <strong>{{ altaPrioridade }}</strong>
       </div>
-
-      <div class="mini-metric">
-        <span>Concluidos</span>
-        <strong>{{ concluidos }}</strong>
-      </div>
-    </div>
+    </section>
   </aside>
 </template>
 
@@ -50,17 +46,13 @@
 import { computed } from 'vue'
 import { store as s } from '../store'
 
-const ativos = computed(() => s.tickets.filter((ticket) => ticket.status !== 'Concluído').length)
-const altaPrioridade = computed(() => s.tickets.filter((ticket) => ticket.prioridade === 'Alta').length)
-const concluidos = computed(() => s.tickets.filter((ticket) => ticket.status === 'Concluído').length)
+const abertos = computed(() => s.tickets.filter((ticket) => ticket.status === 'Aberto').length)
+const execucao = computed(() => s.tickets.filter((ticket) => ticket.status === 'Em execucao').length)
+const altaPrioridade = computed(() => s.tickets.filter((ticket) => ticket.prioridade === 'ALTA').length)
 
 const items = computed(() => [
-  { key: 'dashboard', label: 'Visao geral', badge: null },
-  { key: 'tickets', label: 'Tickets', badge: s.tickets.length },
-  { key: 'kanban', label: 'Kanban', badge: ativos.value }
+  { key: 'dashboard', label: 'Visao geral', description: 'Indicadores do dia', badge: null },
+  { key: 'tickets', label: 'Tickets', description: 'Lista e detalhes', badge: s.tickets.length },
+  { key: 'kanban', label: 'Kanban', description: 'Fluxo por etapa', badge: s.tickets.filter((ticket) => ticket.status !== 'Concluido').length }
 ])
-
-const go = (page) => {
-  s.page = page
-}
 </script>
