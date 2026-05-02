@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: zelodesk-postgres
+    environment:
+      POSTGRES_DB: zelodesk
+      POSTGRES_USER: zelodesk
+      POSTGRES_PASSWORD: zelodesk
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zelodesk -d zelodesk"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: "./ZeloDesk - BackEnd/zelodesk"
+    container_name: zelodesk-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_PROFILE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/zelodesk
+      DB_USER: zelodesk
+      DB_PASSWORD: zelodesk
+      CLIENT_ID: zelodesk-client
+      CLIENT_SECRET: zelodesk-secret
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./Zelodesk-frontend
+      args:
+        VITE_API_URL: /api
+    container_name: zelodesk-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres-data:
