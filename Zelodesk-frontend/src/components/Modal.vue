@@ -1,13 +1,15 @@
 <template>
   <div class="modal-backdrop" @click.self="close">
-    <div class="modal-card">
+    <section class="modal-card" aria-labelledby="new-ticket-title">
       <div class="modal-header">
-        <h2 class="panel-title">Novo ticket</h2>
-
-        <button type="button" class="icon-button" @click="close">Fechar</button>
+        <div>
+          <p class="eyebrow">UC-01</p>
+          <h2 id="new-ticket-title" class="panel-title">Abrir ticket de zeladoria</h2>
+        </div>
+        <button type="button" class="icon-button" @click="close" aria-label="Fechar modal">Fechar</button>
       </div>
 
-      <form class="form-grid" @submit.prevent="criar">
+      <form class="form-grid" @submit.prevent="submit">
         <label class="form-field form-field-full">
           <span>Titulo</span>
           <input
@@ -15,38 +17,42 @@
             class="input"
             type="text"
             placeholder="Ex: Vazamento no bloco B"
+            required
           />
         </label>
 
         <label class="form-field">
-          <span>Setor</span>
-          <select v-model="form.setor" class="input">
-            <option>Hidraulica</option>
-            <option>Eletrica</option>
-            <option>Climatizacao</option>
-            <option>Infraestrutura</option>
-            <option>Operacao</option>
-            <option>Seguranca</option>
+          <span>Categoria</span>
+          <select v-model="form.categoria" class="input" required>
+            <option v-for="categoria in categorias" :key="categoria.value" :value="categoria.value">
+              {{ categoria.label }}
+            </option>
           </select>
         </label>
 
         <label class="form-field">
-          <span>Prioridade</span>
-          <select v-model="form.prioridade" class="input">
-            <option>Alta</option>
-            <option>Media</option>
-            <option>Baixa</option>
+          <span>Urgencia</span>
+          <select v-model="form.prioridade" class="input" required>
+            <option v-for="prioridade in prioridades" :key="prioridade.value" :value="prioridade.value">
+              {{ prioridade.label }}
+            </option>
           </select>
         </label>
 
         <label class="form-field form-field-full">
-          <span>Responsavel</span>
+          <span>Localizacao</span>
           <input
-            v-model="form.responsavel"
+            v-model="form.localPredio"
             class="input"
             type="text"
-            placeholder="Equipe local"
+            placeholder="Ex: Bloco A - 2o andar"
+            required
           />
+        </label>
+
+        <label class="form-field form-field-full">
+          <span>Foto ou anexo (URL opcional)</span>
+          <input v-model="form.anexoUrl" class="input" type="url" placeholder="https://..." />
         </label>
 
         <label class="form-field form-field-full">
@@ -54,61 +60,54 @@
           <textarea
             v-model="form.descricao"
             class="textarea"
-            placeholder="Descreva o chamado"
+            placeholder="Descreva o problema com detalhes suficientes para a triagem"
+            required
           ></textarea>
         </label>
 
         <div class="form-field form-field-full modal-actions">
           <button type="button" class="secondary-button" @click="close">Cancelar</button>
-          <button type="submit" class="primary-button">Criar ticket</button>
+          <button type="submit" class="primary-button" :disabled="s.saving">
+            {{ s.saving ? 'Criando...' : 'Criar ticket' }}
+          </button>
         </div>
       </form>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup>
 import { reactive } from 'vue'
-import { store as s } from '../store'
+import { categorias, createTicket, prioridades, store as s } from '../store'
 
-const createInitialForm = () => ({
+const initialForm = () => ({
   titulo: '',
-  setor: 'Hidraulica',
-  prioridade: 'Media',
-  responsavel: 'Equipe local',
+  categoria: 'HIDRAULICA',
+  prioridade: 'MEDIA',
+  localPredio: '',
+  anexoUrl: '',
   descricao: ''
 })
 
-const form = reactive(createInitialForm())
+const form = reactive(initialForm())
 
-const reset = () => {
-  Object.assign(form, createInitialForm())
-}
+const reset = () => Object.assign(form, initialForm())
 
 const close = () => {
   s.modal = false
   reset()
 }
 
-const criar = () => {
-  const titulo = form.titulo.trim()
-
-  if (!titulo) {
-    return
-  }
-
-  const ticket = {
-    id: Date.now(),
-    titulo,
-    status: 'Aberto',
-    setor: form.setor,
+const submit = async () => {
+  await createTicket({
+    titulo: form.titulo.trim(),
+    descricao: form.descricao.trim(),
+    categoria: form.categoria,
+    localPredio: form.localPredio.trim(),
     prioridade: form.prioridade,
-    responsavel: form.responsavel.trim() || 'Equipe local',
-    descricao: form.descricao.trim() || 'Chamado aberto para avaliacao inicial da equipe.'
-  }
-
-  s.tickets.unshift(ticket)
-  s.selected = ticket
+    solicitador: s.user?.nome || s.user?.email,
+    anexoUrl: form.anexoUrl.trim() || null
+  })
   s.page = 'tickets'
   close()
 }
