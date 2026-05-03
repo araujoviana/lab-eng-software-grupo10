@@ -9,7 +9,6 @@
         <div class="page-intro">
           <p class="eyebrow">{{ pageMeta.eyebrow }}</p>
           <h1>{{ pageMeta.title }}</h1>
-          <p>{{ pageMeta.description }}</p>
         </div>
 
         <div class="topbar-actions">
@@ -22,7 +21,7 @@
             Atualizar
           </button>
 
-          <button v-if="canCreateTickets()" type="button" class="primary-button" @click="s.modal = true">
+          <button v-if="canCreateTickets()" type="button" class="primary-button" @click="openModal">
             Novo ticket
           </button>
 
@@ -63,18 +62,15 @@ import Login from './components/Login.vue'
 const pageMap = {
   dashboard: {
     eyebrow: 'Painel operacional',
-    title: 'Visao geral',
-    description: 'Resumo dos chamados de zeladoria e manutencao do condominio.'
+    title: 'Visão geral'
   },
   tickets: {
     eyebrow: 'Atendimento',
-    title: 'Tickets',
-    description: 'Abra chamados, acompanhe detalhes, registre triagem e conclua atendimentos.'
+    title: 'Tickets'
   },
   kanban: {
     eyebrow: 'Fluxo de trabalho',
-    title: 'Kanban',
-    description: 'Veja os tickets agrupados por etapa do processo.'
+    title: 'Kanban'
   }
 }
 
@@ -83,7 +79,7 @@ const roleLabels = {
   ROLE_TRIAGEM: 'Triagem',
   ROLE_EXECUTOR: 'Executor',
   ROLE_SOLICITANTE: 'Solicitante',
-  ROLE_USUARIO: 'Usuario'
+  ROLE_USUARIO: 'Usuário'
 }
 
 const pageMeta = computed(() => pageMap[s.page] || pageMap.dashboard)
@@ -92,6 +88,11 @@ const primaryRole = computed(() => roleLabels[s.user?.roles?.[0]] || 'Perfil')
 const refresh = async () => {
   await loadTickets()
   await loadExecutores()
+}
+
+const openModal = () => {
+  s.error = ''
+  s.modal = true
 }
 
 onMounted(refresh)

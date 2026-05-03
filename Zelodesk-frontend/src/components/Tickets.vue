@@ -3,14 +3,14 @@
     <section class="toolbar panel" aria-label="Filtros de tickets">
       <label class="form-field compact-field">
         <span>Buscar</span>
-        <input v-model="s.filters.busca" class="input" type="search" placeholder="Titulo, local ou descricao" />
+        <input v-model="s.filters.busca" class="input" type="search" placeholder="Título, local ou descrição" />
       </label>
 
       <label class="form-field compact-field">
         <span>Status</span>
         <select v-model="s.filters.status" class="input" @change="loadTickets">
           <option value="">Todos</option>
-          <option v-for="status in statusList" :key="status" :value="status">{{ status }}</option>
+          <option v-for="status in statusList" :key="status" :value="status">{{ statusLabel(status) }}</option>
         </select>
       </label>
 
@@ -37,7 +37,7 @@
         >
           <div class="ticket-card-header">
             <span class="ticket-id">{{ ticketCode(ticket) }}</span>
-            <span class="status-pill" :class="statusClass(ticket.status)">{{ ticket.status }}</span>
+            <span class="status-pill" :class="statusClass(ticket.status)">{{ statusLabel(ticket.status) }}</span>
           </div>
 
           <h3>{{ ticket.titulo }}</h3>
@@ -59,7 +59,7 @@
             <p class="ticket-id">{{ ticketCode(selected) }}</p>
             <h2 class="panel-title">{{ selected.titulo }}</h2>
           </div>
-          <span class="status-pill" :class="statusClass(selected.status)">{{ selected.status }}</span>
+          <span class="status-pill" :class="statusClass(selected.status)">{{ statusLabel(selected.status) }}</span>
         </div>
 
         <p class="panel-copy">{{ selected.descricao }}</p>
@@ -70,7 +70,7 @@
             <strong>{{ categoryLabel(selected.categoria) }}</strong>
           </div>
           <div class="detail-cell">
-            <span>Localizacao</span>
+            <span>Localização</span>
             <strong>{{ selected.localPredio }}</strong>
           </div>
           <div class="detail-cell">
@@ -78,8 +78,8 @@
             <strong>{{ priorityLabel(selected.prioridade) }}</strong>
           </div>
           <div class="detail-cell">
-            <span>Responsavel</span>
-            <strong>{{ selected.responsavelNome || selected.executorNome || 'Nao atribuido' }}</strong>
+            <span>Responsável</span>
+            <strong>{{ selected.responsavelNome || selected.executorNome || 'Não atribuído' }}</strong>
           </div>
         </div>
 
@@ -94,7 +94,7 @@
             </label>
 
             <label class="form-field">
-              <span>Decisao</span>
+              <span>Decisão</span>
               <select v-model="triagem.decisao" class="input" required>
                 <option value="ATRIBUIR">Atribuir executor</option>
                 <option value="AGUARDAR_SOLICITANTE">Pedir complemento</option>
@@ -106,7 +106,7 @@
             <label v-if="triagem.decisao === 'ATRIBUIR'" class="form-field form-field-full">
               <span>Executor</span>
               <select v-model="triagem.executorId" class="input">
-                <option value="">Informar responsavel manualmente</option>
+                <option value="">Informar responsável manualmente</option>
                 <option v-for="executor in s.executores" :key="executor.id" :value="executor.id">
                   {{ executor.nome }}
                 </option>
@@ -114,7 +114,7 @@
             </label>
 
             <label v-if="triagem.decisao === 'ATRIBUIR' && !triagem.executorId" class="form-field form-field-full">
-              <span>Responsavel manual</span>
+              <span>Responsável manual</span>
               <input v-model="triagem.responsavelNome" class="input" type="text" placeholder="Ex: Equipe Predial" />
             </label>
 
@@ -128,19 +128,19 @@
         </section>
 
         <section v-if="canExecute() && selected.status === 'Em execucao'" class="workflow-card">
-          <h3>Execucao</h3>
+          <h3>Execução</h3>
           <button type="button" class="secondary-button" @click="assume" :disabled="s.saving">
             Assumir ticket
           </button>
 
           <form class="form-grid execution-form" @submit.prevent="submitConclusao">
             <label class="form-field form-field-full">
-              <span>Comentario de atendimento</span>
+              <span>Comentário de atendimento</span>
               <textarea v-model="conclusao.comentarioAtendimento" class="textarea" required></textarea>
             </label>
 
             <label class="form-field form-field-full">
-              <span>Evidencia final (URL)</span>
+              <span>Evidência final (URL)</span>
               <input v-model="conclusao.evidenciaUrl" class="input" type="url" placeholder="https://..." required />
             </label>
 
@@ -151,15 +151,15 @@
         </section>
 
         <section class="workflow-card">
-          <h3>Comentario</h3>
+          <h3>Comentário</h3>
           <form class="comment-form" @submit.prevent="submitComentario">
-            <textarea v-model="comentario" class="textarea compact-textarea" placeholder="Registre uma atualizacao" required></textarea>
+            <textarea v-model="comentario" class="textarea compact-textarea" placeholder="Registre uma atualização" required></textarea>
             <button type="submit" class="secondary-button" :disabled="s.saving">Adicionar</button>
           </form>
         </section>
 
         <section class="timeline-section">
-          <h3>Historico</h3>
+          <h3>Histórico</h3>
           <ol class="timeline-list">
             <li v-for="item in selected.historico" :key="item.id || item.criadoEm">
               <strong>{{ item.acao }}</strong>
@@ -170,7 +170,7 @@
         </section>
 
         <section v-if="selected.comentarios?.length" class="timeline-section">
-          <h3>Comentarios</h3>
+          <h3>Comentários</h3>
           <ol class="timeline-list">
             <li v-for="item in selected.comentarios" :key="item.id || item.criadoEm">
               <strong>{{ item.autor }}</strong>
@@ -205,6 +205,7 @@ import {
   priorityLabel,
   selectedTicket,
   statusClass,
+  statusLabel,
   statusList,
   store as s,
   ticketCode,

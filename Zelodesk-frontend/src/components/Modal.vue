@@ -11,7 +11,7 @@
 
       <form class="form-grid" @submit.prevent="submit">
         <label class="form-field form-field-full">
-          <span>Titulo</span>
+          <span>Título</span>
           <input
             v-model="form.titulo"
             class="input"
@@ -31,7 +31,7 @@
         </label>
 
         <label class="form-field">
-          <span>Urgencia</span>
+          <span>Urgência</span>
           <select v-model="form.prioridade" class="input" required>
             <option v-for="prioridade in prioridades" :key="prioridade.value" :value="prioridade.value">
               {{ prioridade.label }}
@@ -40,7 +40,7 @@
         </label>
 
         <label class="form-field form-field-full">
-          <span>Localizacao</span>
+          <span>Localização</span>
           <input
             v-model="form.localPredio"
             class="input"
@@ -56,14 +56,17 @@
         </label>
 
         <label class="form-field form-field-full">
-          <span>Descricao</span>
+          <span>Descrição</span>
           <textarea
             v-model="form.descricao"
             class="textarea"
             placeholder="Descreva o problema com detalhes suficientes para a triagem"
+            minlength="10"
             required
           ></textarea>
         </label>
+
+        <div v-if="s.error" class="feedback is-error form-field-full" role="alert">{{ s.error }}</div>
 
         <div class="form-field form-field-full modal-actions">
           <button type="button" class="secondary-button" @click="close">Cancelar</button>
@@ -99,16 +102,21 @@ const close = () => {
 }
 
 const submit = async () => {
-  await createTicket({
-    titulo: form.titulo.trim(),
-    descricao: form.descricao.trim(),
-    categoria: form.categoria,
-    localPredio: form.localPredio.trim(),
-    prioridade: form.prioridade,
-    solicitador: s.user?.nome || s.user?.email,
-    anexoUrl: form.anexoUrl.trim() || null
-  })
-  s.page = 'tickets'
-  close()
+  try {
+    const ticket = await createTicket({
+      titulo: form.titulo.trim(),
+      descricao: form.descricao.trim(),
+      categoria: form.categoria,
+      localPredio: form.localPredio.trim(),
+      prioridade: form.prioridade,
+      solicitador: s.user?.nome || s.user?.email,
+      anexoUrl: form.anexoUrl.trim() || null
+    })
+    if (!ticket) return
+    s.page = 'tickets'
+    close()
+  } catch {
+    // O erro já é exibido no próprio modal pelo store.
+  }
 }
 </script>

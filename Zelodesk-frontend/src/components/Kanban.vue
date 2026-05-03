@@ -5,7 +5,6 @@
         <div class="kanban-column-header">
           <div>
             <h2 class="panel-title">{{ column.label }}</h2>
-            <p class="panel-copy">{{ column.description }}</p>
           </div>
           <span class="column-counter">{{ grouped[column.key].length }}</span>
         </div>
@@ -28,7 +27,7 @@
             <p>{{ ticket.localPredio }}</p>
             <div class="ticket-card-meta">
               <span class="meta-tag">{{ categoryLabel(ticket.categoria) }}</span>
-              <span class="meta-tag">{{ ticket.responsavelNome || 'Sem responsavel' }}</span>
+              <span class="meta-tag">{{ ticket.responsavelNome || 'Sem responsável' }}</span>
             </div>
           </button>
         </div>
@@ -44,10 +43,10 @@ import { computed } from 'vue'
 import { categoryLabel, priorityClass, priorityLabel, store as s, ticketCode } from '../store'
 
 const columns = [
-  { key: 'abertura', label: 'Abertura', description: 'Recebidos e aguardando analise' },
-  { key: 'triagem', label: 'Triagem', description: 'Complemento, decisao ou encaminhamento' },
-  { key: 'execucao', label: 'Execucao', description: 'Atribuidos ao executor' },
-  { key: 'finalizados', label: 'Finalizados', description: 'Concluidos, cancelados ou encerrados' }
+  { key: 'abertura', label: 'Abertura' },
+  { key: 'triagem', label: 'Triagem' },
+  { key: 'execucao', label: 'Execução' },
+  { key: 'finalizados', label: 'Finalizados' }
 ]
 
 const grouped = computed(() => {

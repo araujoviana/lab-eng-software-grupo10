@@ -4,7 +4,7 @@
       <div class="brand-mark">ZD</div>
       <div class="brand-copy">
         <h2>Zelo Desk</h2>
-        <p>Tickets para condominios</p>
+        <p>Tickets para condomínios</p>
       </div>
     </div>
 
@@ -17,10 +17,7 @@
         :class="{ 'is-active': s.page === item.key }"
         @click="s.page = item.key"
       >
-        <span>
-          <strong>{{ item.label }}</strong>
-          <small>{{ item.description }}</small>
-        </span>
+        <strong>{{ item.label }}</strong>
         <span v-if="item.badge !== null" class="nav-badge">{{ item.badge }}</span>
       </button>
     </nav>
@@ -31,7 +28,7 @@
         <strong>{{ abertos }}</strong>
       </div>
       <div class="mini-metric">
-        <span>Em execucao</span>
+        <span>Em execução</span>
         <strong>{{ execucao }}</strong>
       </div>
       <div class="mini-metric">
@@ -51,8 +48,8 @@ const execucao = computed(() => s.tickets.filter((ticket) => ticket.status === '
 const altaPrioridade = computed(() => s.tickets.filter((ticket) => ticket.prioridade === 'ALTA').length)
 
 const items = computed(() => [
-  { key: 'dashboard', label: 'Visao geral', description: 'Indicadores do dia', badge: null },
-  { key: 'tickets', label: 'Tickets', description: 'Lista e detalhes', badge: s.tickets.length },
-  { key: 'kanban', label: 'Kanban', description: 'Fluxo por etapa', badge: s.tickets.filter((ticket) => ticket.status !== 'Concluido').length }
+  { key: 'dashboard', label: 'Visão geral', badge: null },
+  { key: 'tickets', label: 'Tickets', badge: s.tickets.length },
+  { key: 'kanban', label: 'Kanban', badge: s.tickets.filter((ticket) => ticket.status !== 'Concluido').length }
 ])
 </script>

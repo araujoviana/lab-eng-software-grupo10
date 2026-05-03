@@ -4,7 +4,6 @@
       <article v-for="item in indicadores" :key="item.label" class="stat-card">
         <span class="stat-label">{{ item.label }}</span>
         <strong class="stat-value">{{ item.value }}</strong>
-        <p>{{ item.copy }}</p>
       </article>
     </section>
 
@@ -13,7 +12,6 @@
         <div class="panel-header panel-header--tight">
           <div>
             <h2 class="panel-title">Chamados recentes</h2>
-            <p class="panel-copy">Ultimos tickets recebidos pela zeladoria.</p>
           </div>
           <button type="button" class="ghost-button" @click="s.page = 'tickets'">Ver todos</button>
         </div>
@@ -29,7 +27,7 @@
             <div class="ticket-row-main">
               <div class="ticket-row-head">
                 <h3 class="ticket-row-title">{{ ticket.titulo }}</h3>
-                <span class="status-pill" :class="statusClass(ticket.status)">{{ ticket.status }}</span>
+                <span class="status-pill" :class="statusClass(ticket.status)">{{ statusLabel(ticket.status) }}</span>
               </div>
               <p class="ticket-row-meta-line">
                 {{ ticketCode(ticket) }} · {{ categoryLabel(ticket.categoria) }} · {{ ticket.localPredio }}
@@ -43,15 +41,14 @@
 
         <div v-else class="empty-state">
           <h3>Nenhum ticket ainda</h3>
-          <p>Crie o primeiro chamado para iniciar a operacao.</p>
+          <p>Crie o primeiro chamado para iniciar a operação.</p>
         </div>
       </article>
 
       <article class="panel">
         <div class="panel-header panel-header--tight">
           <div>
-            <h2 class="panel-title">Distribuicao por status</h2>
-            <p class="panel-copy">Acompanhamento rapido do fluxo.</p>
+            <h2 class="panel-title">Distribuição por status</h2>
           </div>
         </div>
 
@@ -78,6 +75,7 @@ import {
   priorityClass,
   priorityLabel,
   statusClass,
+  statusLabel,
   store as s,
   ticketCode
 } from '../store'
@@ -91,17 +89,17 @@ const altaPrioridade = computed(() => s.tickets.filter((ticket) => ticket.priori
 const recentes = computed(() => s.tickets.slice(0, 5))
 
 const indicadores = computed(() => [
-  { label: 'Total', value: total.value, copy: 'tickets cadastrados' },
-  { label: 'Abertos', value: abertos.value, copy: 'aguardando triagem' },
-  { label: 'Em execucao', value: execucao.value, copy: 'com executor definido' },
-  { label: 'Alta prioridade', value: altaPrioridade.value, copy: 'exigem atencao' }
+  { label: 'Total', value: total.value },
+  { label: 'Abertos', value: abertos.value },
+  { label: 'Em execução', value: execucao.value },
+  { label: 'Alta prioridade', value: altaPrioridade.value }
 ])
 
 const distribuicao = computed(() => [
   { label: 'Abertos', value: abertos.value, className: 'is-open' },
   { label: 'Triagem', value: triagem.value, className: 'is-triage' },
-  { label: 'Execucao', value: execucao.value, className: 'is-progress' },
-  { label: 'Concluidos', value: concluidos.value, className: 'is-done' }
+  { label: 'Execução', value: execucao.value, className: 'is-progress' },
+  { label: 'Concluídos', value: concluidos.value, className: 'is-done' }
 ])
 
 const ratio = (value) => {
