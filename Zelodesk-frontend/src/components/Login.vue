@@ -40,7 +40,6 @@
           @click="fill(profile.email)"
         >
           <strong>{{ profile.label }}</strong>
-          <span>{{ profile.email }}</span>
         </button>
       </div>
     </section>

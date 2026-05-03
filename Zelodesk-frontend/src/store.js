@@ -5,16 +5,16 @@ const TOKEN_KEY = 'zelodesk_token'
 const USER_KEY = 'zelodesk_user'
 
 export const categorias = [
-  { value: 'HIDRAULICA', label: 'Hidraulica' },
-  { value: 'ELETRICA', label: 'Eletrica' },
+  { value: 'HIDRAULICA', label: 'Hidráulica' },
+  { value: 'ELETRICA', label: 'Elétrica' },
   { value: 'LIMPEZA', label: 'Limpeza' },
-  { value: 'MANUTENCAO', label: 'Manutencao' },
-  { value: 'SEGURANCA', label: 'Seguranca' }
+  { value: 'MANUTENCAO', label: 'Manutenção' },
+  { value: 'SEGURANCA', label: 'Segurança' }
 ]
 
 export const prioridades = [
   { value: 'ALTA', label: 'Alta' },
-  { value: 'MEDIA', label: 'Media' },
+  { value: 'MEDIA', label: 'Média' },
   { value: 'BAIXA', label: 'Baixa' }
 ]
 
@@ -27,6 +27,13 @@ export const statusList = [
   'Cancelado',
   'Encerrado'
 ]
+
+const statusLabels = {
+  'Em execucao': 'Em execução',
+  Concluido: 'Concluído'
+}
+
+let messageTimer
 
 const decodeJwt = (token) => {
   try {
@@ -67,7 +74,7 @@ export const hasRole = (role) => Boolean(store.user?.roles?.includes(role))
 
 export const hasAnyRole = (roles) => roles.some((role) => hasRole(role))
 
-export const canCreateTickets = () => hasAnyRole(['ROLE_SOLICITANTE', 'ROLE_USUARIO', 'ROLE_ADMIN'])
+export const canCreateTickets = () => hasAnyRole(['ROLE_SOLICITANTE', 'ROLE_USUARIO', 'ROLE_ADMIN', 'ROLE_TRIAGEM', 'ROLE_EXECUTOR'])
 
 export const canTriage = () => hasAnyRole(['ROLE_TRIAGEM', 'ROLE_ADMIN'])
 
@@ -76,6 +83,8 @@ export const canExecute = () => hasAnyRole(['ROLE_EXECUTOR', 'ROLE_ADMIN'])
 export const priorityLabel = (value) => prioridades.find((item) => item.value === value)?.label || value || 'Sem prioridade'
 
 export const categoryLabel = (value) => categorias.find((item) => item.value === value)?.label || value || 'Sem categoria'
+
+export const statusLabel = (value) => statusLabels[value] || value || 'Sem status'
 
 export const statusClass = (status) => {
   if (status === 'Aberto') return 'is-open'
@@ -94,11 +103,18 @@ export const priorityClass = (priority) => {
 export const ticketCode = (ticket) => ticket?.ticketCode || `TKT-${String(ticket?.id || 0).padStart(3, '0')}`
 
 export const setMessage = (message) => {
+  window.clearTimeout(messageTimer)
   store.message = message
   store.error = ''
+  if (message) {
+    messageTimer = window.setTimeout(() => {
+      store.message = ''
+    }, 3500)
+  }
 }
 
 export const setError = (error) => {
+  window.clearTimeout(messageTimer)
   store.error = error
   store.message = ''
 }
@@ -145,7 +161,6 @@ export const login = async (email, password) => {
 
     await loadTickets()
     await loadExecutores()
-    setMessage('Login realizado com sucesso.')
   } catch (error) {
     logout(false)
     setError(error.message)
@@ -163,7 +178,7 @@ export const logout = (showMessage = true) => {
   store.selectedId = null
   store.executores = []
   if (showMessage) {
-    setMessage('Sessao encerrada.')
+    setMessage('Sessão encerrada.')
   }
 }
 
@@ -242,7 +257,7 @@ export const assumeTicket = async (id) => {
       token: store.token
     })
     replaceTicket(ticket)
-    setMessage('Ticket assumido para execucao.')
+    setMessage('Ticket assumido para execução.')
     return ticket
   } catch (error) {
     setError(error.message)
@@ -261,7 +276,7 @@ export const concludeTicket = async (id, payload) => {
       body: payload
     })
     replaceTicket(ticket)
-    setMessage('Ticket concluido com evidencia.')
+    setMessage('Ticket concluído com evidência.')
     return ticket
   } catch (error) {
     setError(error.message)
@@ -280,7 +295,7 @@ export const addComment = async (id, texto) => {
       body: { texto }
     })
     replaceTicket(ticket)
-    setMessage('Comentario adicionado.')
+    setMessage('Comentário adicionado.')
     return ticket
   } catch (error) {
     setError(error.message)

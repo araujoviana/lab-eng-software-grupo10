@@ -4,12 +4,64 @@ const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET || 'zelodesk-secret'
 
 const toUrl = (path) => `${API_BASE_URL}${path}`
 
+const fieldLabels = {
+  descricao: 'Descrição',
+  titulo: 'Título',
+  categoria: 'Categoria',
+  localPredio: 'Localização',
+  prioridade: 'Prioridade',
+  comentarioAtendimento: 'Comentário de atendimento',
+  evidenciaUrl: 'Evidência final',
+  texto: 'Comentário'
+}
+
+const prettifyMessage = (message) => {
+  if (!message) {
+    return 'Não foi possível concluir a operação.'
+  }
+
+  if (message === 'invalid_grant' || message === 'Bad credentials') {
+    return 'E-mail ou senha inválidos.'
+  }
+
+  const translate = (text) => text
+    .replaceAll('_', ' ')
+    .replaceAll('Descricao', 'Descrição')
+    .replaceAll('Titulo', 'Título')
+    .replaceAll('Localizacao', 'Localização')
+    .replaceAll('Evidencia', 'Evidência')
+    .replaceAll('Comentario', 'Comentário')
+    .replaceAll('Decisao', 'Decisão')
+    .replaceAll('obrigatorio', 'obrigatório')
+    .replaceAll('obrigatoria', 'obrigatória')
+    .replaceAll('operacao', 'operação')
+    .replaceAll('invalida', 'inválida')
+    .replaceAll('nao', 'não')
+    .replaceAll(' e obrigatório', ' é obrigatório')
+    .replaceAll(' e obrigatória', ' é obrigatória')
+
+  return message
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const [field, ...rest] = part.split(':')
+      if (!rest.length) return translate(part)
+
+      const label = fieldLabels[field.trim()] || field.trim()
+      const text = translate(rest.join(':').trim())
+
+      return `${label}: ${text}`
+    })
+    .join('\n')
+}
+
 const readError = async (response) => {
   try {
     const data = await response.json()
-    return data.message || data.error || 'Nao foi possivel concluir a operacao.'
+    return prettifyMessage(data.message || data.error)
   } catch {
-    return 'Nao foi possivel concluir a operacao.'
+    return 'Não foi possível concluir a operação.'
   }
 }
 
