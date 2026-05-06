@@ -1,0 +1,86 @@
+---
+- name: Deploy declarative Jenkins on HuaweiCloud ECS
+  hosts: jenkins
+  become: true
+  gather_facts: false
+
+  vars:
+    effective_jenkins_admin_user: "{{ jenkins_admin_user | default('admin') }}"
+    effective_jenkins_dir: "{{ jenkins_dir | default('/opt/zelodesk-jenkins') }}"
+    effective_terraform_dir: "{{ terraform_dir | default(playbook_dir ~ '/../terraform') }}"
+    effective_jenkins_url: "{{ jenkins_url | default(lookup('ansible.builtin.pipe', 'terraform -chdir=' ~ effective_terraform_dir ~ ' output -raw jenkins_url')) }}"
+    effective_github_repo_url: "{{ github_repo_url | default('https://github.com/araujoviana/lab-eng-software-grupo10.git') }}"
+    effective_github_repo_branch: "{{ github_repo_branch | default('main') }}"
+
+  pre_tasks:
+    - name: Ensure Python is available for Ansible modules
+      ansible.builtin.raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts after Python bootstrap
+      ansible.builtin.setup:
+
+    - name: Assert Jenkins admin password was configured
+      ansible.builtin.assert:
+        that:
+          - jenkins_admin_password is defined
+          - jenkins_admin_password | length >= 8
+          - jenkins_admin_password != 'CHANGE_ME_Strong_Jenkins_123!'
+        fail_msg: "Copy group_vars/jenkins.yml.example to group_vars/jenkins.yml and set jenkins_admin_password."
+      no_log: true
+
+  tasks:
+    - name: Install Docker on Ubuntu
+      ansible.builtin.include_tasks: tasks/docker-ubuntu.yml
+
+    - name: Create Jenkins config directory
+      ansible.builtin.file:
+        path: "{{ effective_jenkins_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Copy declarative Jenkins files
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../jenkins/"
+        dest: "{{ effective_jenkins_dir }}/"
+        owner: root
+        group: root
+        mode: preserve
+
+    - name: Write Jenkins environment file
+      ansible.builtin.copy:
+        dest: "{{ effective_jenkins_dir }}/.env"
+        owner: root
+        group: root
+        mode: "0600"
+        content: |
+          JENKINS_ADMIN_ID={{ effective_jenkins_admin_user }}
+          JENKINS_ADMIN_PASSWORD={{ jenkins_admin_password }}
+          JENKINS_URL={{ effective_jenkins_url }}
+          GITHUB_REPO_URL={{ effective_github_repo_url }}
+          GITHUB_REPO_BRANCH={{ effective_github_repo_branch }}
+      no_log: true
+
+    - name: Build and start Jenkins
+      ansible.builtin.command:
+        cmd: docker compose --env-file .env up -d --build
+        chdir: "{{ effective_jenkins_dir }}"
+      register: jenkins_compose_up
+      changed_when: "'Started' in jenkins_compose_up.stdout or 'Created' in jenkins_compose_up.stdout or 'Recreated' in jenkins_compose_up.stdout or 'Building' in jenkins_compose_up.stdout"
+
+    - name: Show Jenkins compose services
+      ansible.builtin.command:
+        cmd: docker compose --env-file .env ps
+        chdir: "{{ effective_jenkins_dir }}"
+      register: jenkins_compose_ps
+      changed_when: false
+
+    - name: Print Jenkins status
+      ansible.builtin.debug:
+        var: jenkins_compose_ps.stdout_lines
+
+    - name: Print Jenkins URL
+      ansible.builtin.debug:
+        msg: "Jenkins should be available at {{ effective_jenkins_url }} after startup completes."

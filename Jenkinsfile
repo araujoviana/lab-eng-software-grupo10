@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+    triggers {
+        githubPush()
+    }
     
     tools {
         maven 'Maven 3.9' // Nome configurado no Jenkins (Global Tool Configuration)
@@ -43,6 +47,7 @@ pipeline {
                     
                     // Publica relatórios Allure
                     allure includeProperties: false,
+                           commandline: 'Allure 2.29.1',
                            jdk: '',
                            results: [[path: 'ZeloDesk - BackEnd/zelodesk/target/allure-results']]
                 }

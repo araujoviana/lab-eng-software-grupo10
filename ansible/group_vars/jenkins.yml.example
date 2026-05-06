@@ -1,0 +1,11 @@
+# Copy this file to group_vars/jenkins.yml and set a real password.
+# group_vars/jenkins.yml is ignored by Git.
+
+jenkins_admin_user: "admin"
+jenkins_admin_password: "CHANGE_ME_Strong_Jenkins_123!"
+
+github_repo_url: "https://github.com/araujoviana/lab-eng-software-grupo10.git"
+github_repo_branch: "main"
+
+jenkins_dir: "/opt/zelodesk-jenkins"
+terraform_dir: "{{ playbook_dir }}/../terraform"

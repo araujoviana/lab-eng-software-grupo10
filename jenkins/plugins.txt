@@ -1,0 +1,13 @@
+allure-jenkins-plugin
+configuration-as-code
+credentials
+credentials-binding
+git
+github
+github-branch-source
+job-dsl
+junit
+maven-plugin
+pipeline-stage-view
+workflow-aggregator
+ws-cleanup

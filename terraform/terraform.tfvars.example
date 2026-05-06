@@ -1,0 +1,41 @@
+# HuaweiCloud Singapore region.
+region            = "ap-southeast-3"
+availability_zone = "ap-southeast-3a"
+
+# Prefer environment variables for credentials when possible.
+# access_key = "YOUR_ACCESS_KEY"
+# secret_key = "YOUR_SECRET_KEY"
+
+project_name = "zelodesk"
+
+# Restrict this to your public IP if you later attach an EIP directly to the ECS.
+ssh_allowed_cidr = "0.0.0.0/0"
+
+# Adjust these if the selected AZ/account does not offer them.
+ecs_image_name = "Ubuntu 22.04 server 64bit"
+ecs_flavor_id  = "s6.small.1"
+
+# Do not commit real passwords. terraform.tfvars is ignored by terraform/.gitignore.
+ecs_admin_password = "CHANGE_ME_Strong123!"
+rds_admin_password = "CHANGE_ME_Strong123!"
+client_secret      = "CHANGE_ME_Strong_Client_Secret_123!"
+
+# RDS PostgreSQL. HuaweiCloud RDS usually requires at least 40 GB.
+rds_postgresql_version = "14"
+rds_flavor             = "rds.pg.n1.large.2"
+rds_volume_size        = 40
+
+# The default PostgreSQL database normally exists in RDS.
+# If you want DB_NAME=zelodesk, create that database manually after the RDS is ready.
+application_db_name = "postgres"
+
+eip_bandwidth_size = 1
+
+# Separate administrative EIP attached directly to the ECS for SSH/Ansible.
+ecs_ssh_eip_bandwidth_size = 1
+
+# Jenkins runs on a separate ECS so builds do not compete with the app VM.
+jenkins_allowed_cidr       = "0.0.0.0/0"
+jenkins_flavor_id          = "s6.large.2"
+jenkins_system_disk_size   = 60
+jenkins_eip_bandwidth_size = 1

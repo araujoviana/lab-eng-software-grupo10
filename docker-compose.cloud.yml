@@ -22,6 +22,8 @@ services:
       context: ./Zelodesk-frontend
       args:
         VITE_API_URL: /api
+        VITE_CLIENT_ID: ${CLIENT_ID:-zelodesk-client}
+        VITE_CLIENT_SECRET: ${CLIENT_SECRET:-zelodesk-secret}
     container_name: zelodesk-frontend
     restart: unless-stopped
     depends_on:
