@@ -1,0 +1,68 @@
+---
+- name: Deploy ZeloDesk on HuaweiCloud ECS
+  hosts: zelodesk
+  become: true
+  gather_facts: false
+
+  vars:
+    effective_app_repo_url: "{{ app_repo_url | default('https://github.com/araujoviana/lab-eng-software-grupo10.git') }}"
+    effective_app_repo_version: "{{ app_repo_version | default('main') }}"
+    effective_app_dir: "{{ app_dir | default('/opt/zelodesk') }}"
+    effective_terraform_dir: "{{ terraform_dir | default(playbook_dir ~ '/../terraform') }}"
+    effective_terraform_env_output_name: "{{ terraform_env_output_name | default('application_env') }}"
+    app_env_content: "{{ lookup('ansible.builtin.pipe', 'terraform -chdir=' ~ effective_terraform_dir ~ ' output -raw ' ~ effective_terraform_env_output_name) }}"
+
+  pre_tasks:
+    - name: Ensure Python is available for Ansible modules
+      ansible.builtin.raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts after Python bootstrap
+      ansible.builtin.setup:
+
+  tasks:
+    - name: Install Docker on Ubuntu
+      ansible.builtin.include_tasks: tasks/docker-ubuntu.yml
+
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ effective_app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Clone or update application repository
+      ansible.builtin.git:
+        repo: "{{ effective_app_repo_url }}"
+        dest: "{{ effective_app_dir }}"
+        version: "{{ effective_app_repo_version }}"
+        update: true
+        force: true
+
+    - name: Write application environment file from Terraform output
+      ansible.builtin.copy:
+        dest: "{{ effective_app_dir }}/.env"
+        content: "{{ app_env_content }}\n"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+
+    - name: Build and start application containers
+      ansible.builtin.command:
+        cmd: docker compose --env-file .env -f docker-compose.cloud.yml up -d --build
+        chdir: "{{ effective_app_dir }}"
+      register: compose_up
+      changed_when: "'Started' in compose_up.stdout or 'Created' in compose_up.stdout or 'Recreated' in compose_up.stdout or 'Building' in compose_up.stdout"
+
+    - name: Show running compose services
+      ansible.builtin.command:
+        cmd: docker compose --env-file .env -f docker-compose.cloud.yml ps
+        chdir: "{{ effective_app_dir }}"
+      register: compose_ps
+      changed_when: false
+
+    - name: Print compose status
+      ansible.builtin.debug:
+        var: compose_ps.stdout_lines

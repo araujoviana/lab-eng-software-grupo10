@@ -1,0 +1,11 @@
+# Optional overrides for ansible/playbook.yml.
+# Copy this file to group_vars/zelodesk.yml only if you need to change defaults.
+
+# Use HTTPS unless the ECS has an SSH deploy key configured.
+app_repo_url: "https://github.com/araujoviana/lab-eng-software-grupo10.git"
+app_repo_version: "main"
+app_dir: "/opt/zelodesk"
+
+# The playbook reads this Terraform output locally and writes it to app_dir/.env on the ECS.
+terraform_dir: "{{ playbook_dir }}/../terraform"
+terraform_env_output_name: "application_env"

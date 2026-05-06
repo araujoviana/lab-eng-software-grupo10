@@ -1,0 +1,5 @@
+inventory.ini
+group_vars/all.yml
+group_vars/zelodesk.yml
+group_vars/jenkins.yml
+*.retry

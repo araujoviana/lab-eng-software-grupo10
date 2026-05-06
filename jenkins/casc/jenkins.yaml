@@ -1,0 +1,51 @@
+jenkins:
+  systemMessage: "ZeloDesk CI managed by Jenkins Configuration as Code."
+  numExecutors: 2
+  mode: NORMAL
+  scmCheckoutRetryCount: 2
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  remotingSecurity:
+    enabled: true
+
+unclassified:
+  location:
+    url: "${JENKINS_URL}"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+
+  jdk:
+    installations:
+      - name: "JDK 21"
+        home: "/opt/java/openjdk"
+
+  maven:
+    installations:
+      - name: "Maven 3.9"
+        properties:
+          - installSource:
+              installers:
+                - maven:
+                    id: "3.9.9"
+
+  allure:
+    installations:
+      - name: "Allure 2.29.1"
+        home: "/opt/allure-2.40.0"
+
+jobs:
+  - file: /usr/share/jenkins/ref/jobs-dsl/zelodesk.groovy
