@@ -1,5 +1,4 @@
-# ZeloDesk
-
+# ZeloDesk - Projeto
 Sistema de tickets de zeladoria para condominios — Laboratorio de Engenharia de Software, Grupo 10.
 
 ## Sobre o Projeto
